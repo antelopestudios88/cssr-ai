@@ -1,0 +1,433 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f7fb;
+    color: #172033;
+    line-height: 1.6;
+}
+
+/* Navigation */
+
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #102a43;
+    color: white;
+    min-height: 70px;
+    padding: 15px 6%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.brand {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand strong {
+    font-size: 20px;
+}
+
+.brand span {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.nav-links {
+    display: flex;
+    gap: 22px;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.menu-button {
+    display: none;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 25px;
+}
+
+/* Hero */
+
+.hero {
+    min-height: 75vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 50px 20px;
+    background: #102a43;
+    color: white;
+}
+
+.hero-content {
+    max-width: 800px;
+}
+
+.tag,
+.section-label {
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    margin-bottom: 15px;
+}
+
+.tag {
+    opacity: 0.8;
+}
+
+.hero h1 {
+    font-size: clamp(40px, 9vw, 72px);
+    line-height: 1.05;
+    margin-bottom: 25px;
+}
+
+.hero-text {
+    font-size: 20px;
+    opacity: 0.9;
+    margin-bottom: 30px;
+}
+
+.hero-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.button {
+    display: inline-block;
+    padding: 13px 22px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.primary {
+    background: white;
+    color: #102a43;
+}
+
+.secondary {
+    border: 1px solid white;
+    color: white;
+}
+
+/* Sections */
+
+.section {
+    max-width: 1100px;
+    margin: auto;
+    padding: 80px 6%;
+}
+
+.section-label {
+    color: #4b6380;
+}
+
+.section h2 {
+    font-size: 38px;
+    margin-bottom: 15px;
+}
+
+.section > p {
+    max-width: 700px;
+    margin-bottom: 30px;
+}
+
+/* Cards */
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 35px;
+}
+
+.card {
+    background: white;
+    padding: 28px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+}
+
+.icon {
+    font-size: 35px;
+    margin-bottom: 15px;
+}
+
+.card h3 {
+    margin-bottom: 10px;
+}
+
+/* Alternate section */
+
+.alternate {
+    background: #eaf0f6;
+    max-width: none;
+    padding-left: 10%;
+    padding-right: 10%;
+}
+
+.feature-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.feature-list div {
+    background: white;
+    padding: 18px;
+    border-radius: 10px;
+}
+
+/* AI */
+
+.ai-section {
+    text-align: center;
+}
+
+.ai-section > p {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.ai-preview {
+    max-width: 550px;
+    margin: 35px auto 15px;
+    background: #172033;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: left;
+}
+
+.ai-message {
+    background: white;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.ai-input {
+    background: #f4f7fb;
+    padding: 12px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ai-input button {
+    border: none;
+    background: #102a43;
+    color: white;
+    padding: 8px 13px;
+    border-radius: 7px;
+}
+
+.coming {
+    font-size: 13px;
+    opacity: 0.7;
+}
+
+/* Developer */
+
+.developer {
+    text-align: center;
+}
+
+.developer-role {
+    font-weight: bold;
+}
+
+.developer-brand {
+    margin: 30px auto 0;
+    padding: 20px;
+    max-width: 450px;
+    background: #102a43;
+    color: white;
+    border-radius: 12px;
+}
+
+.developer-brand strong,
+.developer-brand span {
+    display: block;
+}
+
+.developer-brand span {
+    opacity: 0.8;
+    font-size: 13px;
+}
+
+/* Footer */
+
+footer {
+    background: #102a43;
+    color: white;
+    text-align: center;
+    padding: 45px 20px;
+}
+
+footer h3 {
+    font-size: 22px;
+    margin-bottom: 10px;
+}
+
+footer p {
+    margin: 7px;
+}
+
+.copyright {
+    margin-top: 20px;
+    opacity: 0.7;
+    font-size: 13px;
+}
+
+/* Mobile */
+
+@media (max-width: 700px) {
+
+    .menu-button {
+        display: block;
+    }
+
+    .nav-links {
+        display: none;
+        position: absolute;
+        top: 70px;
+        left: 0;
+        right: 0;
+        background: #102a43;
+        padding: 20px;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .nav-links.show {
+        display: flex;
+    }
+
+    .cards {
+        grid-template-columns: 1fr;
+    }
+
+    .feature-list {
+        grid-template-columns: 1fr;
+    }
+
+    .section {
+        padding: 60px 6%;
+    }
+
+    .section h2 {
+        font-size: 30px;
+    }
+}
+
+/* CSS-R AI CHAT */
+
+.chat-container {
+    max-width: 650px;
+    margin: 35px auto 15px;
+    background: #172033;
+    padding: 18px;
+    border-radius: 18px;
+    text-align: left;
+}
+
+.chat-messages {
+    min-height: 250px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 5px;
+}
+
+.message {
+    max-width: 85%;
+    padding: 14px;
+    margin-bottom: 12px;
+    border-radius: 14px;
+}
+
+.message p {
+    margin: 6px 0 0;
+}
+
+.ai-message {
+    background: white;
+    color: #172033;
+    margin-right: auto;
+}
+
+.user-message {
+    background: #dce8f3;
+    color: #172033;
+    margin-left: auto;
+}
+
+.chat-input-area {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.chat-input-area input {
+    flex: 1;
+    min-width: 0;
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    outline: none;
+}
+
+.chat-input-area button {
+    width: 55px;
+    border: none;
+    border-radius: 10px;
+    background: white;
+    color: #102a43;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.ai-thinking {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.ai-diamond {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    animation: diamondSpin 1.5s linear infinite;
+}
+
+@keyframes diamondSpin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}

@@ -3,7 +3,7 @@ const path = require("path");
 require("dotenv").config();
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Allow JSON requests
 app.use(express.json());

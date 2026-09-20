@@ -32,6 +32,7 @@
             <a href="#home">Home</a>
             <a href="#school">School</a>
             <a href="#academics">Academics</a>
+            <a href="library.html">Library System</a>
             <a href="#ai">CSS-R AI</a>
             <a href="#developer">Developer</a>
         </div>
@@ -63,8 +64,8 @@
                         Explore CSS-R
                     </a>
 
-                    <a href="#ai" class="button secondary">
-                        Meet CSS-R AI
+                    <a href="library.html" class="button secondary">
+                        Library System
                     </a>
                 </div>
 
@@ -96,12 +97,12 @@
                     </p>
                 </div>
 
-                <div class="card">
+                <div class="card" style="cursor: pointer;" onclick="window.location.href='library.html'">
                     <div class="icon">📚</div>
-                    <h3>Learning</h3>
+                    <h3>Library System</h3>
                     <p>
-                        Access subjects, learning resources
-                        and educational support.
+                        Access subjects, book records, 
+                        and library management support.
                     </p>
                 </div>
 
@@ -146,63 +147,51 @@
         <!-- AI -->
         <section id="ai" class="section ai-section">
 
-    <p class="section-label">ARTIFICIAL INTELLIGENCE</p>
-
-    <h2>🤖 CSS-R AI</h2>
-
-    <p>
-        Your digital learning assistant for
-        Central Secondary School Ruhaama.
-    </p>
-
-    <div class="chat-container">
-
-        <div id="chatMessages" class="chat-messages">
-
-            <div class="message ai-message">
-                <strong>CSS-R AI</strong>
-                <p>
-                    👋 Hello! I am CSS-R AI.
-                    How can I help you today?
-                </p>
-            </div>
-
-        </div>
-
-        <div class="chat-input-area">
-
-            <input
-                id="userInput"
-                type="text"
-                placeholder="Ask CSS-R AI..."
-                autocomplete="off"
-            >
-
-            <button onclick="sendMessage()">
-                ➤
-            </button>
-
-        </div>
-
-    </div>
-
-    <p class="coming">
-        Powered by Antelope Technologies.
-    </p>
-
-</section>
-
             <p class="section-label">ARTIFICIAL INTELLIGENCE</p>
 
             <h2>🤖 CSS-R AI</h2>
 
             <p>
-                An AI assistant designed to help students
-                learn and understand information about
+                Your digital learning assistant for
                 Central Secondary School Ruhaama.
             </p>
 
+            <div class="chat-container">
 
+                <div id="chatMessages" class="chat-messages">
+
+                    <div class="message ai-message">
+                        <strong>CSS-R AI</strong>
+                        <p>
+                            👋 Hello! I am CSS-R AI.
+                            How can I help you today?
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="chat-input-area">
+
+                    <input
+                        id="userInput"
+                        type="text"
+                        placeholder="Ask CSS-R AI..."
+                        autocomplete="off"
+                    >
+
+                    <button onclick="sendMessage()">
+                        ➤
+                    </button>
+
+                </div>
+
+            </div>
+
+            <p class="coming">
+                Powered by Antelope Technologies.
+            </p>
+
+        </section>
 
 
         <!-- Developer -->
@@ -252,13 +241,13 @@
         </p>
 
     </footer>
- 
-     <!-- Meet KoraChat -->
-<div class="hero-buttons">
-    <a href="https://korachat-1.onrender.com" class="button primary">
-        Meet KoraChat
-    </a>
-</div>
+
+    <!-- Meet KoraChat -->
+    <div class="hero-buttons">
+        <a href="https://korachat-1.onrender.com" class="button primary">
+            Meet KoraChat
+        </a>
+    </div>
 
     <script src="app.js"></script>
 

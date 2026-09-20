@@ -173,3 +173,8 @@ Be useful, respectful, and clear.
 app.listen(PORT, () => {
     console.log(`CSS-R website running at http://localhost:${PORT}`);
 });
+
+// Route for Library System
+app.get("/library", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "library.html"));
+});

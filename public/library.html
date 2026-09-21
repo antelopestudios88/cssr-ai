@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>School Library Management System</title>
   <style>
-    /* Reset & Base Styles */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -20,7 +19,6 @@
       min-height: 100vh;
     }
 
-    /* Sidebar Navigation */
     .sidebar {
       width: 240px;
       background-color: #1e293b;
@@ -46,6 +44,7 @@
       border-radius: 6px;
       margin-bottom: 8px;
       font-weight: 500;
+      cursor: pointer;
     }
 
     .sidebar nav a.active, .sidebar nav a:hover {
@@ -53,7 +52,6 @@
       color: #fff;
     }
 
-    /* Main Content Area */
     .main-content {
       flex: 1;
       padding: 30px;
@@ -75,7 +73,6 @@
       color: #0f172a;
     }
 
-    /* Dashboard Stats Cards */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -103,7 +100,6 @@
       color: #0f172a;
     }
 
-    /* Form & Table Section */
     .content-grid {
       display: grid;
       grid-template-columns: 1fr 2fr;
@@ -123,7 +119,6 @@
       color: #1e293b;
     }
 
-    /* Form Styling */
     .form-group {
       margin-bottom: 15px;
     }
@@ -159,7 +154,6 @@
       background-color: #0369a1;
     }
 
-    /* Table Styling */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -185,6 +179,14 @@
       font-size: 0.75rem;
       font-weight: bold;
     }
+
+    .tab-section {
+      display: block;
+    }
+
+    .tab-section.hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -192,21 +194,21 @@
   <!-- Sidebar Navigation -->
   <div class="sidebar">
     <h2>Library System</h2>
-    <nav>
-      <a href="#" class="active">Dashboard</a>
-      <a href="#">Issue Book</a>
-      <a href="#">Book Catalog</a>
-      <a href="#">Students</a>
-      <a href="#">Overdue Logs</a>
+    <nav id="sidebarNav">
+      <a class="nav-link active" data-tab="dashboard">Dashboard</a>
+      <a class="nav-link" data-tab="issue">Issue Book</a>
+      <a class="nav-link" data-tab="catalog">Book Catalog</a>
+      <a class="nav-link" data-tab="students">Students</a>
+      <a class="nav-link" data-tab="overdue">Overdue Logs</a>
     </nav>
   </div>
 
   <!-- Main Content Area -->
   <div class="main-content">
-    
+
     <!-- Top Header -->
     <div class="header">
-      <h1>School Library Dashboard</h1>
+      <h1 id="pageTitle">School Library Dashboard</h1>
       <div><strong>Librarian Portal</strong></div>
     </div>
 
@@ -214,33 +216,33 @@
     <div class="stats-grid">
       <div class="card" style="border-color: #0284c7;">
         <h3>Total Books Installed</h3>
-        <p>1,250</p>
+        <p id="totalBooksCount">1,250</p>
       </div>
       <div class="card" style="border-color: #eab308;">
         <h3>Books Issued Out</h3>
-        <p>142</p>
+        <p id="issuedBooksCount">142</p>
       </div>
       <div class="card" style="border-color: #ef4444;">
         <h3>Overdue Books</h3>
-        <p>18</p>
+        <p id="overdueBooksCount">18</p>
       </div>
     </div>
 
-    <!-- Form & Table Container -->
-    <div class="content-grid">
-      
+    <!-- Dashboard Main View -->
+    <div id="tab-dashboard" class="tab-section content-grid">
+
       <!-- Issue Book Form -->
       <div class="form-container">
         <h2 class="section-title">Issue a Book</h2>
-        <form>
+        <form id="issueBookForm">
           <div class="form-group">
-            <label>Student Name</label>
-            <input type="text" placeholder="e.g. John Okello" required>
+            <label for="studentName">Student Name</label>
+            <input type="text" id="studentName" placeholder="e.g. Lumala Hamuza" required>
           </div>
-          
+
           <div class="form-group">
-            <label>Class / Stream</label>
-            <select required>
+            <label for="classStream">Class / Stream</label>
+            <select id="classStream" required>
               <option value="">Select Class</option>
               <option value="S.1">Senior 1</option>
               <option value="S.2">Senior 2</option>
@@ -250,13 +252,13 @@
           </div>
 
           <div class="form-group">
-            <label>Book Title</label>
-            <input type="text" placeholder="e.g. Chemistry Book 2" required>
+            <label for="bookTitle">Book Title</label>
+            <input type="text" id="bookTitle" placeholder="e.g. Biology Book 2" required>
           </div>
 
           <div class="form-group">
-            <label>Return Date</label>
-            <input type="date" required>
+            <label for="returnDate">Return Date</label>
+            <input type="date" id="returnDate" required>
           </div>
 
           <button type="submit" class="btn-submit">Issue Book</button>
@@ -275,25 +277,8 @@
               <th>Status</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td>Sarah Namubiru</td>
-              <td>S.2 Blue</td>
-              <td>Physics for East Africa</td>
-              <td><span class="status-badge">Issued</span></td>
-            </tr>
-            <tr>
-              <td>David Musoke</td>
-              <td>S.4 West</td>
-              <td>Things Fall Apart</td>
-              <td><span class="status-badge">Issued</span></td>
-            </tr>
-            <tr>
-              <td>Grace Akello</td>
-              <td>S.3 Central</td>
-              <td>Integrated Biology</td>
-              <td><span class="status-badge">Issued</span></td>
-            </tr>
+          <tbody id="issuedBooksTableBody">
+            <!-- Dynamic entries loaded by JS -->
           </tbody>
         </table>
       </div>
@@ -302,5 +287,6 @@
 
   </div>
 
+  <script src="library.js"></script>
 </body>
 </html>

@@ -203,6 +203,134 @@
     .tab-section.active {
       display: block;
     }
+
+    /* Custom Prompt Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(15, 23, 42, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-overlay.hidden {
+      visibility: hidden;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+      visibility: visible;
+    }
+
+    .modal-box {
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 480px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      transform: scale(0.8) translateY(50px);
+      transition: all 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+      border-top: 5px solid #0284c7;
+    }
+
+    .modal-overlay.active .modal-box {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-header h2 {
+      font-size: 1.4rem;
+      color: #0f172a;
+      margin-bottom: 15px;
+    }
+
+    .modal-body p {
+      font-size: 1rem;
+      color: #475569;
+      margin-bottom: 20px;
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      transition: border-color 0.2s;
+    }
+
+    .modal-input:focus {
+      outline: none;
+      border-color: #0284c7;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+    }
+
+    .modal-btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: background 0.2s;
+    }
+
+    .cancel-btn {
+      background-color: #e2e8f0;
+      color: #475569;
+      border: none;
+    }
+
+    .cancel-btn:hover {
+      background-color: #cbd5e1;
+    }
+
+    .confirm-btn {
+      background-color: #0284c7;
+      color: #ffffff;
+      border: none;
+    }
+
+    .confirm-btn:hover {
+      background-color: #0369a1;
+    }
+
+    /* Custom Toast Popup Notification Styles */
+    .toast-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #0284c7;
+      color: #ffffff;
+      padding: 14px 22px;
+      border-radius: 8px;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      transform: translateY(-100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 10000;
+    }
+
+    .toast-notification.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -389,7 +517,26 @@
 
   </div>
 
+  <!-- Custom Prompt Modal -->
+  <div id="customModalOverlay" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>✏️ Update Library Stock</h2>
+      </div>
+      <div class="modal-body">
+        <p>Welcome, Librarian. Please enter the new total number of books installed in the library:</p>
+        <input type="number" id="modalStockInput" placeholder="e.g. 1500" class="modal-input">
+      </div>
+      <div class="modal-footer">
+        <button id="modalCancelBtn" class="modal-btn cancel-btn">Cancel</button>
+        <button id="modalOkBtn" class="modal-btn confirm-btn">Update Stock 🥰😘</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Toast Notification Container -->
+  <div id="toastNotification" class="toast-notification"></div>
+
   <script src="library.js"></script>
 </body>
 </html>
-

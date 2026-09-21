@@ -1,32 +1,45 @@
-const ISSUES_STORAGE_KEY = 'cssr_library_issues';
-const TOTAL_BOOKS_KEY = 'cssr_total_books_stock';
+// =========================================
+// CSS-R Library System Core Scripts
+// =========================================
 
+// Local Storage Keys
+const ISSUES_STORAGE_KEY = 'cssr_library_issues_v2';
+const TOTAL_BOOKS_KEY = 'cssr_total_books_stock_v2';
+
+// Sample borrowing data for initial initialization
 const initialIssues = [
   { id: 1, student: "Sarah Namubiru", classStream: "S.2", title: "Physics for East Africa", dueDate: "2026-03-10", status: "Issued" },
   { id: 2, student: "David Musoke", classStream: "S.4", title: "Things Fall Apart", dueDate: "2026-02-15", status: "Overdue" },
   { id: 3, student: "Grace Akello", classStream: "S.3", title: "Integrated Biology", dueDate: "2026-03-25", status: "Issued" }
 ];
 
-// Load Total Books Stock or Set Default (1,250)
-function getTotalBooks() {
+// Helper to escape HTML and prevent injection attacks
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, match => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[match]));
+}
+
+// Custom Toast Banner Notification (Replaces Browser native alert())
+function showToast(message) {
+  const toast = document.getElementById('toastNotification');
+  if (!toast) return;
+
+  toast.textContent = message;
+  toast.classList.add('show');
+
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 3500);
+}
+
+// 1. Data Loading Functions
+function getTotalBooksStock() {
   const saved = localStorage.getItem(TOTAL_BOOKS_KEY);
   return saved ? parseInt(saved, 10) : 1250;
 }
 
-// Librarian can update the total inventory count
-function updateTotalBooks() {
-  const currentTotal = getTotalBooks();
-  const input = prompt("Enter the new total number of books in the library:", currentTotal);
-  
-  if (input !== null && !isNaN(input) && input.trim() !== '') {
-    const newTotal = parseInt(input.trim(), 10);
-    localStorage.setItem(TOTAL_BOOKS_KEY, newTotal);
-    renderDashboard();
-    alert(`Total library book stock updated to ${newTotal.toLocaleString()}!`);
-  }
-}
-
-function loadIssues() {
+function loadBorrowingRecords() {
   const saved = localStorage.getItem(ISSUES_STORAGE_KEY);
   if (!saved) {
     localStorage.setItem(ISSUES_STORAGE_KEY, JSON.stringify(initialIssues));
@@ -35,25 +48,32 @@ function loadIssues() {
   return JSON.parse(saved);
 }
 
-function saveIssues(issues) {
+// 2. Data Saving Functions
+function saveBorrowingRecords(issues) {
   localStorage.setItem(ISSUES_STORAGE_KEY, JSON.stringify(issues));
-  renderDashboard();
+  renderApplicationState(); // Re-render application whenever data changes
 }
 
-function renderDashboard() {
-  const issues = loadIssues();
-  const totalStock = getTotalBooks();
+function saveTotalBooksStock(newTotal) {
+  localStorage.setItem(TOTAL_BOOKS_KEY, newTotal);
+  renderApplicationState(); // Re-render application whenever data changes
+}
 
-  // Update Statistics KPI Cards
+// 3. UI Redraw (Main Render) Function
+function renderApplicationState() {
+  const issues = loadBorrowingRecords();
+  const totalStock = getTotalBooksStock();
+
+  // A. Update KPI Stat Cards
   document.getElementById('totalBooksCount').textContent = totalStock.toLocaleString();
-  
+
   const activeIssues = issues.filter(i => i.status === 'Issued' || i.status === 'Overdue');
   document.getElementById('issuedBooksCount').textContent = activeIssues.length;
 
   const overdueIssues = issues.filter(i => i.status === 'Overdue');
   document.getElementById('overdueBooksCount').textContent = overdueIssues.length;
 
-  // Render Dashboard Table
+  // B. Render Dashboard Table (Tab 1)
   const dashTbody = document.getElementById('dashboardTableBody');
   if (dashTbody) {
     dashTbody.innerHTML = issues.map(item => `
@@ -71,8 +91,8 @@ function renderDashboard() {
           </span>
         </td>
         <td>
-          ${item.status !== 'Returned' ? 
-            `<button onclick="returnBook(${item.id})" style="padding: 4px 8px; background: #16a34a; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">Return</button>` : 
+          ${item.status !== 'Returned' ?
+            `<button onclick="returnBook(${item.id})" style="padding: 4px 8px; background: #16a34a; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">Return</button>` :
             `<span style="color: #94a3b8; font-size: 0.8rem;">Returned</span>`
           }
         </td>
@@ -80,7 +100,7 @@ function renderDashboard() {
     `).join('');
   }
 
-  // Render Students Tab Data
+  // C. Render Students Tab Data (Tab 4)
   const studentsTbody = document.getElementById('studentsTableBody');
   if (studentsTbody) {
     const studentMap = {};
@@ -100,12 +120,12 @@ function renderDashboard() {
     `).join('');
   }
 
-  // Render Overdue Tab Data
+  // D. Render Overdue Tab Data (Tab 5)
   const overdueTbody = document.getElementById('overdueTableBody');
   if (overdueTbody) {
     const overdues = issues.filter(i => i.status === 'Overdue');
     if (overdues.length === 0) {
-      overdueTbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#94a3b8;">No overdue books pending.</td></tr>`;
+      overdueTbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:20px;">No overdue books pending.</td></tr>`;
     } else {
       overdueTbody.innerHTML = overdues.map(i => `
         <tr>
@@ -120,10 +140,101 @@ function renderDashboard() {
   }
 }
 
-function handleIssueSubmit(e) {
+// =========================================
+// CUSTOM MODAL LOGIC (Promises)
+// Replaces boring prompt() and alert()
+// =========================================
+
+// Cache Modal DOM References
+const modalOverlay = document.getElementById('customModalOverlay');
+const modalInput = document.getElementById('modalStockInput');
+const cancelBtn = document.getElementById('modalCancelBtn');
+const okBtn = document.getElementById('modalOkBtn');
+
+// Launches the professional custom prompt
+function launchCustomPrompt(defaultValue) {
+  return new Promise((resolve) => {
+    // 1. Initialize Modal
+    modalInput.value = defaultValue;
+    modalOverlay.classList.remove('hidden');
+    void modalOverlay.offsetWidth;
+    modalOverlay.classList.add('active');
+
+    modalInput.focus();
+
+    // 2. Define Clean Closure Functions for Cleanup
+    function cleanupAndResolve(value) {
+      cancelBtn.removeEventListener('click', handleCancel);
+      okBtn.removeEventListener('click', handleOk);
+      modalInput.removeEventListener('keydown', handleKeydown);
+
+      modalOverlay.classList.remove('active');
+      setTimeout(() => {
+        modalOverlay.classList.add('hidden');
+      }, 300);
+
+      resolve(value);
+    }
+
+    // 3. Handle Button Click Logic
+    function handleCancel() {
+      cleanupAndResolve(null);
+    }
+
+    function handleOk() {
+      const input = modalInput.value.trim();
+      cleanupAndResolve(input);
+    }
+
+    function handleKeydown(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleOk();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        handleCancel();
+      }
+    }
+
+    // 4. Attach Events to the Specific Promise Instance
+    cancelBtn.addEventListener('click', handleCancel);
+    okBtn.addEventListener('click', handleOk);
+    modalInput.addEventListener('keydown', handleKeydown);
+  });
+}
+
+async function updateTotalBooks() {
+  const currentTotal = getTotalBooksStock();
+  const userInput = await launchCustomPrompt(currentTotal);
+
+  if (userInput !== null && userInput.trim() !== '' && !isNaN(userInput)) {
+    const newTotal = parseInt(userInput.trim(), 10);
+    saveTotalBooksStock(newTotal);
+
+    showToast(`Library total stock updated to ${newTotal.toLocaleString()} successfully! 🥰😘`);
+  }
+}
+
+// =========================================
+// Functional Interactions (Links, Forms)
+// =========================================
+
+function returnBook(id) {
+  let issues = loadBorrowingRecords();
+  issues = issues.map(item => {
+    if (item.id === id) {
+      return { ...item, status: 'Returned' };
+    }
+    return item;
+  });
+  saveBorrowingRecords(issues);
+  showToast("Book status updated to Returned! 🥰😘");
+}
+
+function handleIssueFormSubmit(e) {
   e.preventDefault();
   const form = e.target;
-  
+
   const student = form.querySelector('.input-student').value.trim();
   const classStream = form.querySelector('.input-class').value;
   const title = form.querySelector('.input-title').value.trim();
@@ -138,33 +249,22 @@ function handleIssueSubmit(e) {
     status: "Issued"
   };
 
-  const issues = loadIssues();
+  const issues = loadBorrowingRecords();
   issues.unshift(newIssue);
-  saveIssues(issues);
+  saveBorrowingRecords(issues);
 
   form.reset();
-  alert(`Book "${title}" issued successfully to ${student}!`);
+  showToast(`Book "${title}" issued successfully to ${student}! 🥰😘`);
 }
 
-function returnBook(id) {
-  let issues = loadIssues();
-  issues = issues.map(item => {
-    if (item.id === id) {
-      return { ...item, status: 'Returned' };
-    }
-    return item;
-  });
-  saveIssues(issues);
-}
-
-function setupNavigation() {
+function setupSidebarNavigation() {
   const links = document.querySelectorAll('.nav-link');
   const pageTitle = document.getElementById('pageTitle');
 
   links.forEach(link => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
-      
+
       links.forEach(l => l.classList.remove('active'));
       link.classList.add('active');
 
@@ -185,19 +285,14 @@ function setupNavigation() {
   });
 }
 
-function escapeHtml(str) {
-  return String(str).replace(/[&<>"']/g, match => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[match]));
-}
-
+// 4. Dom Content Loading Initialization
 document.addEventListener('DOMContentLoaded', () => {
-  renderDashboard();
-  setupNavigation();
+  renderApplicationState();
+  setupSidebarNavigation();
 
   const dashForm = document.getElementById('issueBookFormDashboard');
-  if (dashForm) dashForm.addEventListener('submit', handleIssueSubmit);
+  if (dashForm) dashForm.addEventListener('submit', handleIssueFormSubmit);
 
   const dedicatedForm = document.getElementById('issueBookFormDedicated');
-  if (dedicatedForm) dedicatedForm.addEventListener('submit', handleIssueSubmit);
+  if (dedicatedForm) dedicatedForm.addEventListener('submit', handleIssueFormSubmit);
 });

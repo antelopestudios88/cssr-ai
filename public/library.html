@@ -86,6 +86,7 @@
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
       border-left: 5px solid #0284c7;
+      position: relative;
     }
 
     .card h3 {
@@ -100,17 +101,34 @@
       color: #0f172a;
     }
 
+    .btn-edit {
+      margin-top: 8px;
+      background: #e2e8f0;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: #334155;
+    }
+
+    .btn-edit:hover {
+      background: #cbd5e1;
+    }
+
     .content-grid {
       display: grid;
       grid-template-columns: 1fr 2fr;
       gap: 20px;
     }
 
-    .form-container, .table-container {
+    .form-container, .table-container, .panel-card {
       background: #fff;
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
     }
 
     .section-title {
@@ -172,8 +190,6 @@
     }
 
     .status-badge {
-      background-color: #dcfce7;
-      color: #166534;
       padding: 4px 8px;
       border-radius: 12px;
       font-size: 0.75rem;
@@ -181,11 +197,11 @@
     }
 
     .tab-section {
-      display: block;
+      display: none;
     }
 
-    .tab-section.hidden {
-      display: none;
+    .tab-section.active {
+      display: block;
     }
   </style>
 </head>
@@ -217,32 +233,80 @@
       <div class="card" style="border-color: #0284c7;">
         <h3>Total Books Installed</h3>
         <p id="totalBooksCount">1,250</p>
+        <button class="btn-edit" onclick="updateTotalBooks()">✏️ Update Stock</button>
       </div>
       <div class="card" style="border-color: #eab308;">
         <h3>Books Issued Out</h3>
-        <p id="issuedBooksCount">142</p>
+        <p id="issuedBooksCount">0</p>
       </div>
       <div class="card" style="border-color: #ef4444;">
         <h3>Overdue Books</h3>
-        <p id="overdueBooksCount">18</p>
+        <p id="overdueBooksCount">0</p>
       </div>
     </div>
 
-    <!-- Dashboard Main View -->
-    <div id="tab-dashboard" class="tab-section content-grid">
+    <!-- TAB 1: DASHBOARD -->
+    <div id="tab-dashboard" class="tab-section active">
+      <div class="content-grid">
+        <div class="form-container">
+          <h2 class="section-title">Issue a Book</h2>
+          <form id="issueBookFormDashboard">
+            <div class="form-group">
+              <label>Student Name</label>
+              <input type="text" class="input-student" placeholder="e.g. Lumala Hamuza" required>
+            </div>
+            <div class="form-group">
+              <label>Class / Stream</label>
+              <select class="input-class" required>
+                <option value="">Select Class</option>
+                <option value="S.1">Senior 1</option>
+                <option value="S.2">Senior 2</option>
+                <option value="S.3">Senior 3</option>
+                <option value="S.4">Senior 4</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Book Title</label>
+              <input type="text" class="input-title" placeholder="e.g. Biology Book 2" required>
+            </div>
+            <div class="form-group">
+              <label>Return Date</label>
+              <input type="date" class="input-date" required>
+            </div>
+            <button type="submit" class="btn-submit">Issue Book</button>
+          </form>
+        </div>
 
-      <!-- Issue Book Form -->
-      <div class="form-container">
-        <h2 class="section-title">Issue a Book</h2>
-        <form id="issueBookForm">
+        <div class="table-container">
+          <h2 class="section-title">Recently Issued Books</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Class</th>
+                <th>Book Title</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="dashboardTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: ISSUE BOOK VIEW -->
+    <div id="tab-issue" class="tab-section">
+      <div class="panel-card" style="max-width: 600px;">
+        <h2 class="section-title">Issue Book Direct Portal</h2>
+        <form id="issueBookFormDedicated">
           <div class="form-group">
-            <label for="studentName">Student Name</label>
-            <input type="text" id="studentName" placeholder="e.g. Lumala Hamuza" required>
+            <label>Student Name</label>
+            <input type="text" class="input-student" placeholder="e.g. Sarah Namubiru" required>
           </div>
-
           <div class="form-group">
-            <label for="classStream">Class / Stream</label>
-            <select id="classStream" required>
+            <label>Class / Stream</label>
+            <select class="input-class" required>
               <option value="">Select Class</option>
               <option value="S.1">Senior 1</option>
               <option value="S.2">Senior 2</option>
@@ -250,39 +314,77 @@
               <option value="S.4">Senior 4</option>
             </select>
           </div>
-
           <div class="form-group">
-            <label for="bookTitle">Book Title</label>
-            <input type="text" id="bookTitle" placeholder="e.g. Biology Book 2" required>
+            <label>Book Title</label>
+            <input type="text" class="input-title" placeholder="e.g. Physics Vol 1" required>
           </div>
-
           <div class="form-group">
-            <label for="returnDate">Return Date</label>
-            <input type="date" id="returnDate" required>
+            <label>Return Date</label>
+            <input type="date" class="input-date" required>
           </div>
-
           <button type="submit" class="btn-submit">Issue Book</button>
         </form>
       </div>
+    </div>
 
-      <!-- Recent Issued Books Table -->
+    <!-- TAB 3: BOOK CATALOG -->
+    <div id="tab-catalog" class="tab-section">
       <div class="table-container">
-        <h2 class="section-title">Recently Issued Books</h2>
+        <h2 class="section-title">Library Book Catalog</h2>
         <table>
           <thead>
             <tr>
-              <th>Student</th>
-              <th>Class</th>
+              <th>Subject</th>
               <th>Book Title</th>
-              <th>Status</th>
+              <th>Recommended Class</th>
+              <th>Availability</th>
             </tr>
           </thead>
-          <tbody id="issuedBooksTableBody">
-            <!-- Dynamic entries loaded by JS -->
+          <tbody>
+            <tr><td>Physics</td><td>Physics for East Africa</td><td>S.1 - S.4</td><td>Available</td></tr>
+            <tr><td>Biology</td><td>Integrated Biology Vol 2</td><td>S.2 - S.4</td><td>Available</td></tr>
+            <tr><td>Chemistry</td><td>Ordinary Level Chemistry</td><td>S.3 - S.4</td><td>Available</td></tr>
+            <tr><td>Mathematics</td><td>Pure Mathematics Standard</td><td>S.1 - S.4</td><td>Available</td></tr>
+            <tr><td>English</td><td>Things Fall Apart</td><td>S.3 - S.4</td><td>Available</td></tr>
           </tbody>
         </table>
       </div>
+    </div>
 
+    <!-- TAB 4: STUDENTS DIRECTORY -->
+    <div id="tab-students" class="tab-section">
+      <div class="table-container">
+        <h2 class="section-title">Registered Borrowers Directory</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Student Name</th>
+              <th>Class</th>
+              <th>Total Books Borrowed</th>
+            </tr>
+          </thead>
+          <tbody id="studentsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 5: OVERDUE LOGS -->
+    <div id="tab-overdue" class="tab-section">
+      <div class="table-container">
+        <h2 class="section-title">Overdue Books & Late Returns</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Student Name</th>
+              <th>Class</th>
+              <th>Book Title</th>
+              <th>Due Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="overdueTableBody"></tbody>
+        </table>
+      </div>
     </div>
 
   </div>
@@ -290,3 +392,4 @@
   <script src="library.js"></script>
 </body>
 </html>
+

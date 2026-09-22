@@ -3,14 +3,14 @@
 // =========================================
 
 // Local Storage Keys
-const ISSUES_STORAGE_KEY = 'cssr_library_issues_v2';
-const TOTAL_BOOKS_KEY = 'cssr_total_books_stock_v2';
+const ISSUES_STORAGE_KEY = 'cssr_library_issues_v3';
+const TOTAL_BOOKS_KEY = 'cssr_total_books_stock_v3';
 
 // Sample borrowing data for initial initialization
 const initialIssues = [
-  { id: 1, student: "Sarah Namubiru", classStream: "S.2", title: "Physics for East Africa", dueDate: "2026-03-10", status: "Issued" },
-  { id: 2, student: "David Musoke", classStream: "S.4", title: "Things Fall Apart", dueDate: "2026-02-15", status: "Overdue" },
-  { id: 3, student: "Grace Akello", classStream: "S.3", title: "Integrated Biology", dueDate: "2026-03-25", status: "Issued" }
+  { id: 1, student: "Sarah Namubiru", classStream: "S.2 A", title: "Physics for East Africa", dueDate: "2026-03-10", status: "Issued" },
+  { id: 2, student: "David Musoke", classStream: "S.4 B", title: "Things Fall Apart", dueDate: "2026-02-15", status: "Issued" },
+  { id: 3, student: "Grace Akello", classStream: "S.3 C", title: "Integrated Biology", dueDate: "2026-03-25", status: "Issued" }
 ];
 
 // Helper to escape HTML and prevent injection attacks
@@ -20,7 +20,7 @@ function escapeHtml(str) {
   }[match]));
 }
 
-// Custom Toast Banner Notification (Replaces Browser native alert())
+// Custom Toast Banner Notification
 function showToast(message) {
   const toast = document.getElementById('toastNotification');
   if (!toast) return;
@@ -33,7 +33,7 @@ function showToast(message) {
   }, 3500);
 }
 
-// 1. Data Loading Functions
+// 1. Data Loading Functions with Automatic Overdue Calculation
 function getTotalBooksStock() {
   const saved = localStorage.getItem(TOTAL_BOOKS_KEY);
   return saved ? parseInt(saved, 10) : 1250;
@@ -41,22 +41,32 @@ function getTotalBooksStock() {
 
 function loadBorrowingRecords() {
   const saved = localStorage.getItem(ISSUES_STORAGE_KEY);
-  if (!saved) {
-    localStorage.setItem(ISSUES_STORAGE_KEY, JSON.stringify(initialIssues));
-    return initialIssues;
-  }
-  return JSON.parse(saved);
+  let records = saved ? JSON.parse(saved) : initialIssues;
+
+  // Real-time Automatic Overdue Checking!
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  records = records.map(item => {
+    if (item.status !== 'Returned' && item.dueDate && item.dueDate < todayStr) {
+      return { ...item, status: 'Overdue' };
+    } else if (item.status === 'Overdue' && item.dueDate >= todayStr) {
+      return { ...item, status: 'Issued' };
+    }
+    return item;
+  });
+
+  return records;
 }
 
 // 2. Data Saving Functions
 function saveBorrowingRecords(issues) {
   localStorage.setItem(ISSUES_STORAGE_KEY, JSON.stringify(issues));
-  renderApplicationState(); // Re-render application whenever data changes
+  renderApplicationState();
 }
 
 function saveTotalBooksStock(newTotal) {
   localStorage.setItem(TOTAL_BOOKS_KEY, newTotal);
-  renderApplicationState(); // Re-render application whenever data changes
+  renderApplicationState();
 }
 
 // 3. UI Redraw (Main Render) Function
@@ -81,6 +91,7 @@ function renderApplicationState() {
         <td>${escapeHtml(item.student)}</td>
         <td>${escapeHtml(item.classStream)}</td>
         <td>${escapeHtml(item.title)}</td>
+        <td>${escapeHtml(item.dueDate || 'N/A')}</td>
         <td>
           <span class="status-badge" style="background-color: ${
             item.status === 'Returned' ? '#e2e8f0' : item.status === 'Overdue' ? '#fee2e2' : '#dcfce7'
@@ -92,7 +103,7 @@ function renderApplicationState() {
         </td>
         <td>
           ${item.status !== 'Returned' ?
-            `<button onclick="returnBook(${item.id})" style="padding: 4px 8px; background: #16a34a; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">Return</button>` :
+            `<button onclick="returnBook(${item.id})" style="padding: 5px 10px; background: #16a34a; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight:600;">Return</button>` :
             `<span style="color: #94a3b8; font-size: 0.8rem;">Returned</span>`
           }
         </td>
@@ -108,14 +119,16 @@ function renderApplicationState() {
       if (!studentMap[i.student]) {
         studentMap[i.student] = { name: i.student, classStream: i.classStream, count: 0 };
       }
-      studentMap[i.student].count += 1;
+      if (i.status !== 'Returned') {
+        studentMap[i.student].count += 1;
+      }
     });
 
     studentsTbody.innerHTML = Object.values(studentMap).map(s => `
       <tr>
         <td>${escapeHtml(s.name)}</td>
         <td>${escapeHtml(s.classStream)}</td>
-        <td>${s.count} book(s)</td>
+        <td>${s.count} active book(s)</td>
       </tr>
     `).join('');
   }
@@ -142,19 +155,15 @@ function renderApplicationState() {
 
 // =========================================
 // CUSTOM MODAL LOGIC (Promises)
-// Replaces boring prompt() and alert()
 // =========================================
 
-// Cache Modal DOM References
 const modalOverlay = document.getElementById('customModalOverlay');
 const modalInput = document.getElementById('modalStockInput');
 const cancelBtn = document.getElementById('modalCancelBtn');
 const okBtn = document.getElementById('modalOkBtn');
 
-// Launches the professional custom prompt
 function launchCustomPrompt(defaultValue) {
   return new Promise((resolve) => {
-    // 1. Initialize Modal
     modalInput.value = defaultValue;
     modalOverlay.classList.remove('hidden');
     void modalOverlay.offsetWidth;
@@ -162,7 +171,6 @@ function launchCustomPrompt(defaultValue) {
 
     modalInput.focus();
 
-    // 2. Define Clean Closure Functions for Cleanup
     function cleanupAndResolve(value) {
       cancelBtn.removeEventListener('click', handleCancel);
       okBtn.removeEventListener('click', handleOk);
@@ -176,7 +184,6 @@ function launchCustomPrompt(defaultValue) {
       resolve(value);
     }
 
-    // 3. Handle Button Click Logic
     function handleCancel() {
       cleanupAndResolve(null);
     }
@@ -196,7 +203,6 @@ function launchCustomPrompt(defaultValue) {
       }
     }
 
-    // 4. Attach Events to the Specific Promise Instance
     cancelBtn.addEventListener('click', handleCancel);
     okBtn.addEventListener('click', handleOk);
     modalInput.addEventListener('keydown', handleKeydown);
@@ -210,13 +216,12 @@ async function updateTotalBooks() {
   if (userInput !== null && userInput.trim() !== '' && !isNaN(userInput)) {
     const newTotal = parseInt(userInput.trim(), 10);
     saveTotalBooksStock(newTotal);
-
     showToast(`Library total stock updated to ${newTotal.toLocaleString()} successfully! 🥰😘`);
   }
 }
 
 // =========================================
-// Functional Interactions (Links, Forms)
+// Functional Interactions
 // =========================================
 
 function returnBook(id) {
@@ -228,7 +233,7 @@ function returnBook(id) {
     return item;
   });
   saveBorrowingRecords(issues);
-  showToast("Book status updated to Returned! 🥰😘");
+  showToast("Book returned successfully! 🥰😘");
 }
 
 function handleIssueFormSubmit(e) {
@@ -240,13 +245,16 @@ function handleIssueFormSubmit(e) {
   const title = form.querySelector('.input-title').value.trim();
   const dueDate = form.querySelector('.input-date').value;
 
+  const todayStr = new Date().toISOString().split('T')[0];
+  const isOverdue = dueDate < todayStr;
+
   const newIssue = {
     id: Date.now(),
     student,
     classStream,
     title,
     dueDate,
-    status: "Issued"
+    status: isOverdue ? "Overdue" : "Issued"
   };
 
   const issues = loadBorrowingRecords();
@@ -285,7 +293,6 @@ function setupSidebarNavigation() {
   });
 }
 
-// 4. Dom Content Loading Initialization
 document.addEventListener('DOMContentLoaded', () => {
   renderApplicationState();
   setupSidebarNavigation();

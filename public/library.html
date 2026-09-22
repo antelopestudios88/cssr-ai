@@ -149,12 +149,28 @@
       color: #475569;
     }
 
+    /* Modern Styled Dropdown Inputs */
     .form-group input, .form-group select {
       width: 100%;
-      padding: 10px;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
-      font-size: 0.9rem;
+      padding: 12px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      background-color: #f8fafc;
+      color: #0f172a;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .form-group select {
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .form-group input:focus, .form-group select:focus {
+      border-color: #0284c7;
+      background-color: #fff;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
     }
 
     .btn-submit {
@@ -162,10 +178,12 @@
       background-color: #0284c7;
       color: #fff;
       border: none;
-      padding: 10px;
-      border-radius: 6px;
+      padding: 12px;
+      border-radius: 8px;
       font-weight: bold;
+      font-size: 1rem;
       cursor: pointer;
+      transition: background 0.2s;
     }
 
     .btn-submit:hover {
@@ -190,10 +208,11 @@
     }
 
     .status-badge {
-      padding: 4px 8px;
+      padding: 4px 10px;
       border-radius: 12px;
       font-size: 0.75rem;
       font-weight: bold;
+      display: inline-block;
     }
 
     .tab-section {
@@ -310,7 +329,7 @@
       background-color: #0369a1;
     }
 
-    /* Custom Toast Popup Notification Styles */
+    /* Custom Toast Notification Banner */
     .toast-notification {
       position: fixed;
       top: 20px;
@@ -384,13 +403,29 @@
               <input type="text" class="input-student" placeholder="e.g. Lumala Hamuza" required>
             </div>
             <div class="form-group">
-              <label>Class / Stream</label>
+              <label>Class & Stream</label>
               <select class="input-class" required>
-                <option value="">Select Class</option>
-                <option value="S.1">Senior 1</option>
-                <option value="S.2">Senior 2</option>
-                <option value="S.3">Senior 3</option>
-                <option value="S.4">Senior 4</option>
+                <option value="">Select Class & Stream</option>
+                <optgroup label="O-Level (S.1 - S.4)">
+                  <option value="S.1 A">Senior 1 A</option>
+                  <option value="S.1 B">Senior 1 B</option>
+                  <option value="S.1 C">Senior 1 C</option>
+                  <option value="S.2 A">Senior 2 A</option>
+                  <option value="S.2 B">Senior 2 B</option>
+                  <option value="S.2 C">Senior 2 C</option>
+                  <option value="S.3 A">Senior 3 A</option>
+                  <option value="S.3 B">Senior 3 B</option>
+                  <option value="S.3 C">Senior 3 C</option>
+                  <option value="S.4 A">Senior 4 A</option>
+                  <option value="S.4 B">Senior 4 B</option>
+                  <option value="S.4 C">Senior 4 C</option>
+                </optgroup>
+                <optgroup label="A-Level (S.5 - S.6)">
+                  <option value="S.5 Arts">Senior 5 Arts</option>
+                  <option value="S.5 Sci">Senior 5 Science</option>
+                  <option value="S.6 Arts">Senior 6 Arts</option>
+                  <option value="S.6 Sci">Senior 6 Science</option>
+                </optgroup>
               </select>
             </div>
             <div class="form-group">
@@ -413,6 +448,7 @@
                 <th>Student</th>
                 <th>Class</th>
                 <th>Book Title</th>
+                <th>Due Date</th>
                 <th>Status</th>
                 <th>Action</th>
               </tr>
@@ -433,13 +469,29 @@
             <input type="text" class="input-student" placeholder="e.g. Sarah Namubiru" required>
           </div>
           <div class="form-group">
-            <label>Class / Stream</label>
+            <label>Class & Stream</label>
             <select class="input-class" required>
-              <option value="">Select Class</option>
-              <option value="S.1">Senior 1</option>
-              <option value="S.2">Senior 2</option>
-              <option value="S.3">Senior 3</option>
-              <option value="S.4">Senior 4</option>
+              <option value="">Select Class & Stream</option>
+              <optgroup label="O-Level (S.1 - S.4)">
+                <option value="S.1 A">Senior 1 A</option>
+                <option value="S.1 B">Senior 1 B</option>
+                <option value="S.1 C">Senior 1 C</option>
+                <option value="S.2 A">Senior 2 A</option>
+                <option value="S.2 B">Senior 2 B</option>
+                <option value="S.2 C">Senior 2 C</option>
+                <option value="S.3 A">Senior 3 A</option>
+                <option value="S.3 B">Senior 3 B</option>
+                <option value="S.3 C">Senior 3 C</option>
+                <option value="S.4 A">Senior 4 A</option>
+                <option value="S.4 B">Senior 4 B</option>
+                <option value="S.4 C">Senior 4 C</option>
+              </optgroup>
+              <optgroup label="A-Level (S.5 - S.6)">
+                <option value="S.5 Arts">Senior 5 Arts</option>
+                <option value="S.5 Sci">Senior 5 Science</option>
+                <option value="S.6 Arts">Senior 6 Arts</option>
+                <option value="S.6 Sci">Senior 6 Science</option>
+              </optgroup>
             </select>
           </div>
           <div class="form-group">
@@ -472,8 +524,9 @@
             <tr><td>Physics</td><td>Physics for East Africa</td><td>S.1 - S.4</td><td>Available</td></tr>
             <tr><td>Biology</td><td>Integrated Biology Vol 2</td><td>S.2 - S.4</td><td>Available</td></tr>
             <tr><td>Chemistry</td><td>Ordinary Level Chemistry</td><td>S.3 - S.4</td><td>Available</td></tr>
-            <tr><td>Mathematics</td><td>Pure Mathematics Standard</td><td>S.1 - S.4</td><td>Available</td></tr>
+            <tr><td>Mathematics</td><td>Pure Mathematics Standard</td><td>S.1 - S.6</td><td>Available</td></tr>
             <tr><td>English</td><td>Things Fall Apart</td><td>S.3 - S.4</td><td>Available</td></tr>
+            <tr><td>Economics</td><td>Advanced Level Economics</td><td>S.5 - S.6</td><td>Available</td></tr>
           </tbody>
         </table>
       </div>

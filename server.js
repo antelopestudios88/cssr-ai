@@ -109,27 +109,23 @@ const groq = new Groq({
     apiKey: process.env.GROQ_API_KEY
 });
 
-// --- AI CHAT ENDPOINT ---
+// --- AI CHAT ENDPOINT (WITH SHORT-TERM CONTEXT MEMORY) ---
 app.post("/api/chat", async (req, res) => {
     try {
-        const question = req.body.message;
+        const { message, history } = req.body;
 
-        console.log("User asked:", question);
-
-        if (!question || question.trim() === "") {
+        if (!message || message.trim() === "") {
             return res.status(400).json({
                 error: "Please enter a question."
             });
         }
 
-        console.log("Sending request to Groq...");
+        console.log("User asked:", message);
+        console.log("Sending request to Groq with history context...");
 
-        const completion = await groq.chat.completions.create({
-            model: "openai/gpt-oss-120b",
-            messages: [
-                {
-                    role: "system",
-                    content: `
+        const systemMessage = {
+            role: "system",
+            content: `
 You are CSS-R AI, a warm and intelligent digital assistant for the CSS-R Website.
 
 IDENTITY
@@ -209,12 +205,19 @@ Do not give long answers to simple questions.
 Give detailed explanations only when needed.
 Be useful, respectful, and clear.
 `
-                },
-                {
-                    role: "user",
-                    content: question
-                }
-            ],
+        };
+
+        // Construct full conversation context: System prompt + past history array + current question
+        const pastMessages = Array.isArray(history) ? history : [];
+        const fullConversation = [
+            systemMessage,
+            ...pastMessages,
+            { role: "user", content: message }
+        ];
+
+        const completion = await groq.chat.completions.create({
+            model: "openai/gpt-oss-120b",
+            messages: fullConversation,
             temperature: 0.6,
             max_tokens: 1024,
         });
@@ -228,7 +231,7 @@ Be useful, respectful, and clear.
         }
 
         // Save conversation to Firebase in the background
-        saveChatToFirebase(question, reply);
+        saveChatToFirebase(message, reply);
 
         res.json({ reply: reply });
 

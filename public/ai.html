@@ -182,6 +182,9 @@
     const userInput = document.getElementById('userInput');
     const chatMessages = document.getElementById('chatMessages');
 
+    // Local state to track short-term conversation context for Groq
+    let chatHistory = [];
+
     function appendMessage(sender, text, isAi) {
       const msgDiv = document.createElement('div');
       msgDiv.className = `message ${isAi ? 'ai' : 'user'}`;
@@ -212,16 +215,21 @@
       }[match]));
     }
 
-    // Restore chat history from Firestore on page load
+    // Restore chat history from Firestore on page load and populate memory array
     async function loadChatHistory() {
       try {
         const response = await fetch('/api/history');
         const data = await response.json();
 
         if (data.history && data.history.length > 0) {
+          chatHistory = []; // Reset local memory
           data.history.forEach(item => {
             appendMessage('You', item.userMessage, false);
             appendMessage('CSS-R AI', item.aiReply, true);
+
+            // Seed local chat memory so AI context persists across refresh
+            chatHistory.push({ role: 'user', content: item.userMessage });
+            chatHistory.push({ role: 'assistant', content: item.aiReply });
           });
         }
       } catch (err) {
@@ -247,10 +255,14 @@
       chatMessages.scrollTop = chatMessages.scrollHeight;
 
       try {
+        // Send current message along with past chat history context
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: question })
+          body: JSON.stringify({ 
+            message: question,
+            history: chatHistory.slice(-10) // Limit to last 10 messages for speed
+          })
         });
 
         const data = await response.json();
@@ -261,6 +273,10 @@
 
         if (response.ok) {
           appendMessage('CSS-R AI', data.reply, true);
+
+          // Append exchange to local history context
+          chatHistory.push({ role: 'user', content: question });
+          chatHistory.push({ role: 'assistant', content: data.reply });
         } else {
           appendMessage('CSS-R AI', data.error || 'Sorry, something went wrong.', true);
         }

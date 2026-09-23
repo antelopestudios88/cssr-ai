@@ -4,6 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CSS-R AI - Digital Learning Portal</title>
+  
+  <!-- Marked.js for Markdown parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- MathJax for rendering LaTeX equations -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)'], ['$', '$']],
+        displayMath: [['\\[', '\\]'], ['$$', '$$']]
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -86,7 +104,6 @@
       border-radius: 12px;
       line-height: 1.6;
       font-size: 0.95rem;
-      white-space: pre-wrap;
       word-wrap: break-word;
     }
 
@@ -101,6 +118,31 @@
       background-color: #0284c7;
       color: #ffffff;
       align-self: flex-end;
+    }
+
+    /* Markdown styling inside AI messages */
+    .message.ai p {
+      margin-bottom: 8px;
+    }
+    .message.ai p:last-child {
+      margin-bottom: 0;
+    }
+    .message.ai ul, .message.ai ol {
+      margin-left: 20px;
+      margin-bottom: 8px;
+    }
+    .message.ai code {
+      background: #0f172a;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    .message.ai pre {
+      background: #0f172a;
+      padding: 10px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin-bottom: 8px;
     }
 
     .input-area {
@@ -190,9 +232,22 @@
     function appendMessage(sender, text, isAi) {
       const msgDiv = document.createElement('div');
       msgDiv.className = `message ${isAi ? 'ai' : 'user'}`;
-      msgDiv.innerHTML = `<strong>${sender}:</strong><br>${escapeHtml(text)}`;
+
+      if (isAi) {
+        // Parse markdown formatting for AI response
+        const htmlContent = window.marked ? marked.parse(text) : escapeHtml(text);
+        msgDiv.innerHTML = `<strong>${sender}:</strong><br>${htmlContent}`;
+      } else {
+        msgDiv.innerHTML = `<strong>${sender}:</strong><br>${escapeHtml(text)}`;
+      }
+
       chatMessages.appendChild(msgDiv);
       chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      // Trigger MathJax typeset to render LaTeX math symbols
+      if (isAi && window.MathJax) {
+        MathJax.typesetPromise([msgDiv]).catch((err) => console.error("MathJax error:", err));
+      }
     }
 
     function escapeHtml(str) {

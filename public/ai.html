@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS-R AI - Digital Learning Portal</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #0f172a;
+      color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .header {
+      background-color: #1e293b;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .brand h1 {
+      font-size: 1.2rem;
+      color: #38bdf8;
+    }
+
+    .brand span {
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+
+    .nav-btn {
+      background-color: #0284c7;
+      color: white;
+      text-decoration: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+
+    .nav-btn:hover {
+      background-color: #0369a1;
+    }
+
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 15px;
+      overflow: hidden;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .message {
+      max-width: 85%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      line-height: 1.6;
+      font-size: 0.95rem;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .message.ai {
+      background-color: #1e293b;
+      color: #f8fafc;
+      align-self: flex-start;
+      border-left: 4px solid #38bdf8;
+    }
+
+    .message.user {
+      background-color: #0284c7;
+      color: #ffffff;
+      align-self: flex-end;
+    }
+
+    .input-area {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #334155;
+    }
+
+    .input-area input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      background-color: #1e293b;
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .input-area input:focus {
+      border-color: #38bdf8;
+    }
+
+    .input-area button {
+      background-color: #0284c7;
+      color: #fff;
+      border: none;
+      padding: 0 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .input-area button:hover {
+      background-color: #0369a1;
+    }
+
+    .footer-credit {
+      text-align: center;
+      padding: 10px;
+      font-size: 0.8rem;
+      color: #64748b;
+      border-top: 1px solid #1e293b;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <div class="header">
+    <div class="brand">
+      <h1>🤖 CSS-R AI Portal</h1>
+      <span>Central Secondary School Ruhaama</span>
+    </div>
+    <a href="/" class="nav-btn">← Home</a>
+  </div>
+
+  <!-- Chat Portal Area -->
+  <div class="chat-container">
+    <div id="chatMessages" class="chat-messages">
+      <div class="message ai">
+        <strong>CSS-R AI:</strong><br>
+        👋 Hello! I am CSS-R AI, your digital learning assistant for Central Secondary School Ruhaama. How can I help you today?
+      </div>
+    </div>
+
+    <!-- Input Form -->
+    <form id="chatForm" class="input-area">
+      <input type="text" id="userInput" placeholder="Ask CSS-R AI a learning question..." required autocomplete="off">
+      <button type="submit">Send</button>
+    </form>
+  </div>
+
+  <div class="footer-credit">
+    Created by Lumala Hamuza • Antelope Technologies / Antelope Labs
+  </div>
+
+  <script>
+    const chatForm = document.getElementById('chatForm');
+    const userInput = document.getElementById('userInput');
+    const chatMessages = document.getElementById('chatMessages');
+
+    function appendMessage(sender, text, isAi) {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `message ${isAi ? 'ai' : 'user'}`;
+      msgDiv.innerHTML = `<strong>${sender}:</strong><br>${escapeHtml(text)}`;
+      chatMessages.appendChild(msgDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, match => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[match]));
+    }
+
+    chatForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const question = userInput.value.trim();
+      if (!question) return;
+
+      appendMessage('You', question, false);
+      userInput.value = '';
+
+      // Create loading indicator
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'message ai';
+      loadingDiv.innerHTML = '<em>CSS-R AI is thinking...</em>';
+      chatMessages.appendChild(loadingDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: question })
+        });
+
+        const data = await response.json();
+
+        // Safely remove loading bubble if still in DOM
+        if (chatMessages.contains(loadingDiv)) {
+          chatMessages.removeChild(loadingDiv);
+        }
+
+        if (response.ok) {
+          appendMessage('CSS-R AI', data.reply, true);
+        } else {
+          appendMessage('CSS-R AI', data.error || 'Sorry, something went wrong.', true);
+        }
+      } catch (err) {
+        // Safely remove loading bubble if request fails/drops
+        if (chatMessages.contains(loadingDiv)) {
+          chatMessages.removeChild(loadingDiv);
+        }
+        appendMessage('CSS-R AI', 'Connection error or request timed out. Please check your internet and try again.', true);
+      } finally {
+        userInput.focus();
+      }
+    });
+  </script>
+</body>
+</html>

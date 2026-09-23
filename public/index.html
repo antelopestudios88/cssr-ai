@@ -33,7 +33,7 @@
             <a href="#school">School</a>
             <a href="#academics">Academics</a>
             <a href="library.html">Library System</a>
-            <a href="#ai">CSS-R AI</a>
+            <a href="/ai">CSS-R AI Portal</a>
             <a href="#developer">Developer</a>
         </div>
 
@@ -66,6 +66,10 @@
 
                     <a href="library.html" class="button secondary">
                         Library System
+                    </a>
+
+                    <a href="/ai" class="button primary">
+                        🤖 CSS-R AI Portal
                     </a>
                 </div>
 
@@ -101,17 +105,17 @@
                     <div class="icon">📚</div>
                     <h3>Library System</h3>
                     <p>
-                        Access subjects, book records, 
+                        Access subjects, book records,
                         and library management support.
                     </p>
                 </div>
 
-                <div class="card">
-                    <div class="icon">🕐</div>
-                    <h3>Timetable</h3>
+                <div class="card" style="cursor: pointer;" onclick="window.location.href='/ai'">
+                    <div class="icon">🤖</div>
+                    <h3>AI Portal</h3>
                     <p>
-                        Find lessons and other important
-                        school schedules.
+                        Interactive digital assistant for 
+                        learning, mathematics, and subject help.
                     </p>
                 </div>
 
@@ -144,50 +148,26 @@
         </section>
 
 
-        <!-- AI -->
+        <!-- AI Info Section -->
         <section id="ai" class="section ai-section">
 
             <p class="section-label">ARTIFICIAL INTELLIGENCE</p>
 
-            <h2>🤖 CSS-R AI</h2>
+            <h2>🤖 CSS-R AI Assistant</h2>
 
             <p>
-                Your digital learning assistant for
-                Central Secondary School Ruhaama.
+                Your dedicated digital learning assistant for
+                Central Secondary School Ruhaama. Get step-by-step 
+                help with Mathematics, Science, Coding, ICT, and general learning.
             </p>
 
-            <div class="chat-container">
-
-                <div id="chatMessages" class="chat-messages">
-
-                    <div class="message ai-message">
-                        <strong>CSS-R AI</strong>
-                        <p>
-                            👋 Hello! I am CSS-R AI.
-                            How can I help you today?
-                        </p>
-                    </div>
-
-                </div>
-
-                <div class="chat-input-area">
-
-                    <input
-                        id="userInput"
-                        type="text"
-                        placeholder="Ask CSS-R AI..."
-                        autocomplete="off"
-                    >
-
-                    <button onclick="sendMessage()">
-                        ➤
-                    </button>
-
-                </div>
-
+            <div style="margin-top: 25px; text-align: center;">
+                <a href="/ai" class="button primary" style="font-size: 1.1rem; padding: 14px 28px;">
+                    🚀 Launch CSS-R AI Portal
+                </a>
             </div>
 
-            <p class="coming">
+            <p class="coming" style="margin-top: 20px;">
                 Powered by Antelope Technologies.
             </p>
 
@@ -243,7 +223,7 @@
     </footer>
 
     <!-- Meet KoraChat -->
-    <div class="hero-buttons">
+    <div class="hero-buttons" style="justify-content: center; padding-bottom: 20px;">
         <a href="https://korachat-1.onrender.com" class="button primary">
             Meet KoraChat
         </a>

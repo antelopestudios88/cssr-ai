@@ -1,43 +1,40 @@
 const express = require("express");
 const path = require("path");
+const Groq = require("groq-sdk");
 require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Allow JSON requests
+// Middleware to parse incoming JSON
 app.use(express.json());
 
-// Serve website files
+// Serve static files from the public folder
 app.use(express.static(path.join(__dirname, "public")));
 
-// Gemini AI
-let ai;
+// --- DEDICATED PAGE ROUTES ---
 
-async function startAI() {
-    try {
-        const { GoogleGenAI } = await import("@google/genai");
+// AI Learning Assistant Portal Route
+app.get("/ai", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "ai.html"));
+});
 
-        if (!process.env.GEMINI_API_KEY) {
-            throw new Error("GEMINI_API_KEY is missing from .env");
-        }
+// Library Management System Route
+app.get("/library", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "library.html"));
+});
 
-        ai = new GoogleGenAI({
-            apiKey: process.env.GEMINI_API_KEY
-        });
-
-        console.log("Gemini AI connected successfully.");
-    } catch (error) {
-        console.error("Gemini connection error:", error.message);
-    }
+// --- GROQ AI INITIALIZATION ---
+if (!process.env.GROQ_API_KEY) {
+    console.warn("Warning: GROQ_API_KEY is missing from .env");
 }
 
-startAI();
+const groq = new Groq({
+    apiKey: process.env.GROQ_API_KEY
+});
 
-
-// AI endpoint
+// --- AI CHAT ENDPOINT ---
 app.post("/api/chat", async (req, res) => {
-
     try {
         const question = req.body.message;
 
@@ -49,21 +46,14 @@ app.post("/api/chat", async (req, res) => {
             });
         }
 
-        if (!ai) {
-            return res.status(503).json({
-                error: "CSS-R AI is still starting. Please try again."
-            });
-        }
+        console.log("Sending request to Groq...");
 
-        console.log("Sending request to Gemini...");
-
-        const response = await ai.models.generateContent({
-            model: "gemini-3.5-flash-lite",
-
-            contents: question,
-
-            config: {
-                systemInstruction: `
+        const completion = await groq.chat.completions.create({
+            model: "openai/gpt-oss-120b",
+            messages: [
+                {
+                    role: "system",
+                    content: `
 You are CSS-R AI, a warm and intelligent digital assistant for the CSS-R Website.
 
 IDENTITY
@@ -143,38 +133,42 @@ Do not give long answers to simple questions.
 Give detailed explanations only when needed.
 Be useful, respectful, and clear.
 `
-            }
+                },
+                {
+                    role: "user",
+                    content: question
+                }
+            ],
+            temperature: 0.6,
+            max_tokens: 1024,
         });
 
-        console.log("Gemini answered successfully.");
+        console.log("Groq answered successfully.");
 
-        const reply = response.text;
+        const reply = completion.choices[0]?.message?.content;
 
         if (!reply) {
-            throw new Error("Gemini returned an empty response.");
+            throw new Error("Groq returned an empty response.");
         }
 
-        res.json({
-            reply: reply
-        });
+        res.json({ reply: reply });
 
     } catch (error) {
+        console.error("Groq request error:", error.message || error);
 
-        console.error("Gemini error:");
-        console.error(error);
+        if (error.code === 'ECONNABORTED' || (error.message && error.message.includes('fetch failed'))) {
+            return res.status(504).json({
+                error: "Network connection lost. Please check your internet connection and try again."
+            });
+        }
 
         res.status(500).json({
-            error: error.message || "CSS-R AI could not answer right now."
+            error: "CSS-R AI could not process your request right now. Please try again."
         });
     }
 });
 
-
+// --- START SERVER ---
 app.listen(PORT, () => {
     console.log(`CSS-R website running at http://localhost:${PORT}`);
-});
-
-// Route for Library System
-app.get("/library", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "library.html"));
 });

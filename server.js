@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require("path");
 const Groq = require("groq-sdk");
+const admin = require("firebase-admin");
 require("dotenv").config();
 
 const app = express();
@@ -11,6 +12,48 @@ app.use(express.json());
 
 // Serve static files from the public folder
 app.use(express.static(path.join(__dirname, "public")));
+
+// --- FIREBASE FIRESTORE INITIALIZATION ---
+let db = null;
+try {
+    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+        let serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
+        // Fix potential newline escaping issues from environment variables
+        if (serviceAccount.private_key) {
+            serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+        }
+
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount)
+        });
+
+        db = admin.firestore();
+        console.log("Firebase Firestore initialized successfully!");
+    } else {
+        console.warn("Warning: FIREBASE_SERVICE_ACCOUNT is missing from environment variables.");
+    }
+} catch (err) {
+    console.error("Firebase Initialization Error:", err.message);
+}
+
+// Function to safely save logs to Firestore in the background
+async function saveChatToFirebase(userMsg, aiReply) {
+    if (!db) {
+        console.warn("Firestore not available; skipping chat log.");
+        return;
+    }
+    try {
+        const docRef = await db.collection("chat_logs").add({
+            userMessage: userMsg,
+            aiReply: aiReply,
+            timestamp: admin.firestore.FieldValue.serverTimestamp()
+        });
+        console.log("Successfully saved chat to Firestore ID:", docRef.id);
+    } catch (err) {
+        console.error("Firestore Save Error:", err.message);
+    }
+}
 
 // --- DEDICATED PAGE ROUTES ---
 
@@ -150,6 +193,9 @@ Be useful, respectful, and clear.
         if (!reply) {
             throw new Error("Groq returned an empty response.");
         }
+
+        // Save conversation to Firebase in the background
+        saveChatToFirebase(question, reply);
 
         res.json({ reply: reply });
 

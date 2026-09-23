@@ -8,12 +8,12 @@
   <!-- Marked.js for Markdown parsing -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-  <!-- MathJax for rendering LaTeX equations -->
+  <!-- MathJax Configuration -->
   <script>
     window.MathJax = {
       tex: {
         inlineMath: [['\\(', '\\)'], ['$', '$']],
-        displayMath: [['\\[', '\\]'], ['$$', '$$']]
+        displayMath: [['\\[', '\\]'], ['$$', '$$'], ['[', ']']]
       },
       options: {
         skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
@@ -47,12 +47,6 @@
       border-bottom: 1px solid #334155;
     }
 
-    .brand {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
     .brand h1 {
       font-size: 1.2rem;
       color: #38bdf8;
@@ -71,11 +65,6 @@
       border-radius: 6px;
       font-size: 0.85rem;
       font-weight: 600;
-      transition: background 0.2s;
-    }
-
-    .nav-btn:hover {
-      background-color: #0369a1;
     }
 
     .chat-container {
@@ -92,7 +81,6 @@
     .chat-messages {
       flex: 1;
       overflow-y: auto;
-      padding-right: 6px;
       display: flex;
       flex-direction: column;
       gap: 15px;
@@ -120,30 +108,8 @@
       align-self: flex-end;
     }
 
-    /* Markdown styling inside AI messages */
-    .message.ai p {
-      margin-bottom: 8px;
-    }
-    .message.ai p:last-child {
-      margin-bottom: 0;
-    }
-    .message.ai ul, .message.ai ol {
-      margin-left: 20px;
-      margin-bottom: 8px;
-    }
-    .message.ai code {
-      background: #0f172a;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family: monospace;
-    }
-    .message.ai pre {
-      background: #0f172a;
-      padding: 10px;
-      border-radius: 6px;
-      overflow-x: auto;
-      margin-bottom: 8px;
-    }
+    .message.ai p { margin-bottom: 8px; }
+    .message.ai ul, .message.ai ol { margin-left: 20px; margin-bottom: 8px; }
 
     .input-area {
       display: flex;
@@ -164,10 +130,6 @@
       outline: none;
     }
 
-    .input-area input:focus {
-      border-color: #38bdf8;
-    }
-
     .input-area button {
       background-color: #0284c7;
       color: #fff;
@@ -175,13 +137,7 @@
       padding: 0 20px;
       border-radius: 8px;
       font-weight: bold;
-      font-size: 0.95rem;
       cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .input-area button:hover {
-      background-color: #0369a1;
     }
 
     .footer-credit {
@@ -195,7 +151,6 @@
 </head>
 <body>
 
-  <!-- Top Header Navigation -->
   <div class="header">
     <div class="brand">
       <h1>🤖 CSS-R AI Portal</h1>
@@ -204,7 +159,6 @@
     <a href="/" class="nav-btn">← Home</a>
   </div>
 
-  <!-- Chat Portal Area -->
   <div class="chat-container">
     <div id="chatMessages" class="chat-messages">
       <div class="message ai">
@@ -213,7 +167,6 @@
       </div>
     </div>
 
-    <!-- Input Form -->
     <form id="chatForm" class="input-area">
       <input type="text" id="userInput" placeholder="Ask CSS-R AI a learning question..." required autocomplete="off">
       <button type="submit">Send</button>
@@ -234,8 +187,11 @@
       msgDiv.className = `message ${isAi ? 'ai' : 'user'}`;
 
       if (isAi) {
-        // Parse markdown formatting for AI response
-        const htmlContent = window.marked ? marked.parse(text) : escapeHtml(text);
+        // Pre-process math tags so marked doesn't strip backslashes
+        let formattedText = text
+          .replace(/\[\s*/g, '$$$$')           .replace(/\s*\]/g, '$$$$');
+
+        const htmlContent = window.marked ? marked.parse(formattedText) : escapeHtml(text);
         msgDiv.innerHTML = `<strong>${sender}:</strong><br>${htmlContent}`;
       } else {
         msgDiv.innerHTML = `<strong>${sender}:</strong><br>${escapeHtml(text)}`;
@@ -244,8 +200,8 @@
       chatMessages.appendChild(msgDiv);
       chatMessages.scrollTop = chatMessages.scrollHeight;
 
-      // Trigger MathJax typeset to render LaTeX math symbols
-      if (isAi && window.MathJax) {
+      // Render math equations with MathJax
+      if (isAi && window.MathJax && window.MathJax.typesetPromise) {
         MathJax.typesetPromise([msgDiv]).catch((err) => console.error("MathJax error:", err));
       }
     }
@@ -264,7 +220,6 @@
       appendMessage('You', question, false);
       userInput.value = '';
 
-      // Create loading indicator
       const loadingDiv = document.createElement('div');
       loadingDiv.className = 'message ai';
       loadingDiv.innerHTML = '<em>CSS-R AI is thinking...</em>';
@@ -280,7 +235,6 @@
 
         const data = await response.json();
 
-        // Safely remove loading bubble if still in DOM
         if (chatMessages.contains(loadingDiv)) {
           chatMessages.removeChild(loadingDiv);
         }
@@ -291,11 +245,10 @@
           appendMessage('CSS-R AI', data.error || 'Sorry, something went wrong.', true);
         }
       } catch (err) {
-        // Safely remove loading bubble if request fails/drops
         if (chatMessages.contains(loadingDiv)) {
           chatMessages.removeChild(loadingDiv);
         }
-        appendMessage('CSS-R AI', 'Connection error or request timed out. Please check your internet and try again.', true);
+        appendMessage('CSS-R AI', 'Connection error. Please try again.', true);
       } finally {
         userInput.focus();
       }

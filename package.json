@@ -14,6 +14,7 @@
   "dependencies": {
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "firebase-admin": "^14.4.0",
     "groq-sdk": "^1.6.0"
   }
 }

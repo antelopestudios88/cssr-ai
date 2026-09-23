@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require("path");
 const Groq = require("groq-sdk");
+const https = require("https"); // Native HTTPS module for pinging
 const { initializeApp, cert } = require("firebase-admin/app");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 require("dotenv").config();
@@ -22,7 +23,6 @@ try {
             ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
             : process.env.FIREBASE_SERVICE_ACCOUNT;
 
-        // Fix potential newline escaping issues from environment variables
         if (serviceAccount.private_key) {
             serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
         }
@@ -89,13 +89,10 @@ app.get("/api/history", async (req, res) => {
 });
 
 // --- DEDICATED PAGE ROUTES ---
-
-// AI Learning Assistant Portal Route
 app.get("/ai", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "ai.html"));
 });
 
-// Library Management System Route
 app.get("/library", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "library.html"));
 });
@@ -121,7 +118,6 @@ app.post("/api/chat", async (req, res) => {
         }
 
         console.log("User asked:", message);
-        console.log("Sending request to Groq with history context...");
 
         const systemMessage = {
             role: "system",
@@ -207,7 +203,6 @@ Be useful, respectful, and clear.
 `
         };
 
-        // Construct full conversation context: System prompt + past history array + current question
         const pastMessages = Array.isArray(history) ? history : [];
         const fullConversation = [
             systemMessage,
@@ -222,15 +217,12 @@ Be useful, respectful, and clear.
             max_tokens: 1024,
         });
 
-        console.log("Groq answered successfully.");
-
         const reply = completion.choices[0]?.message?.content;
 
         if (!reply) {
             throw new Error("Groq returned an empty response.");
         }
 
-        // Save conversation to Firebase in the background
         saveChatToFirebase(message, reply);
 
         res.json({ reply: reply });
@@ -249,6 +241,17 @@ Be useful, respectful, and clear.
         });
     }
 });
+
+// --- KEEP-ALIVE SELF-PING ROBOT ---
+const RENDER_URL = process.env.RENDER_EXTERNAL_URL || "https://cssr-ai.onrender.com";
+
+setInterval(() => {
+    https.get(`${RENDER_URL}/health`, (res) => {
+        console.log(`Keep-alive ping sent to /health — Status: ${res.statusCode}`);
+    }).on("error", (err) => {
+        console.error("Keep-alive ping error:", err.message);
+    });
+}, 10 * 60 * 1000); // Trigger ping every 10 minutes
 
 // --- START SERVER ---
 app.listen(PORT, () => {

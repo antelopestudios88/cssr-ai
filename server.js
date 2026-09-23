@@ -58,6 +58,36 @@ async function saveChatToFirebase(userMsg, aiReply) {
     }
 }
 
+// --- LIGHTWEIGHT HEALTH CHECK ROUTE (FOR UPTIME MONITORS) ---
+app.get("/health", (req, res) => {
+    res.status(200).send("CSS-R AI is awake and active.");
+});
+
+// --- FETCH CHAT HISTORY ENDPOINT ---
+app.get("/api/history", async (req, res) => {
+    if (!db) {
+        return res.status(503).json({ error: "Database not initialized." });
+    }
+    try {
+        const snapshot = await db.collection("chat_logs")
+            .orderBy("timestamp", "asc")
+            .limit(50)
+            .get();
+
+        const history = snapshot.docs.map(doc => ({
+            id: doc.id,
+            userMessage: doc.data().userMessage,
+            aiReply: doc.data().aiReply,
+            timestamp: doc.data().timestamp
+        }));
+
+        res.json({ history });
+    } catch (error) {
+        console.error("Error fetching chat history:", error.message);
+        res.status(500).json({ error: "Failed to load chat history." });
+    }
+});
+
 // --- DEDICATED PAGE ROUTES ---
 
 // AI Learning Assistant Portal Route

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CSS-R AI - Digital Learning Portal</title>
-  
+
   <!-- Marked.js for Markdown parsing -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
@@ -211,6 +211,26 @@
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
       }[match]));
     }
+
+    // Restore chat history from Firestore on page load
+    async function loadChatHistory() {
+      try {
+        const response = await fetch('/api/history');
+        const data = await response.json();
+
+        if (data.history && data.history.length > 0) {
+          data.history.forEach(item => {
+            appendMessage('You', item.userMessage, false);
+            appendMessage('CSS-R AI', item.aiReply, true);
+          });
+        }
+      } catch (err) {
+        console.error("Failed to restore history:", err);
+      }
+    }
+
+    // Call history loader on page initialization
+    window.addEventListener('DOMContentLoaded', loadChatHistory);
 
     chatForm.addEventListener('submit', async (e) => {
       e.preventDefault();

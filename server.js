@@ -1,7 +1,8 @@
 const express = require("express");
 const path = require("path");
 const Groq = require("groq-sdk");
-const admin = require("firebase-admin");
+const { initializeApp, cert } = require("firebase-admin/app");
+const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 require("dotenv").config();
 
 const app = express();
@@ -17,18 +18,20 @@ app.use(express.static(path.join(__dirname, "public")));
 let db = null;
 try {
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-        let serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+        let serviceAccount = typeof process.env.FIREBASE_SERVICE_ACCOUNT === "string"
+            ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
+            : process.env.FIREBASE_SERVICE_ACCOUNT;
 
         // Fix potential newline escaping issues from environment variables
         if (serviceAccount.private_key) {
             serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
         }
 
-        admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount)
+        initializeApp({
+            credential: cert(serviceAccount)
         });
 
-        db = admin.firestore();
+        db = getFirestore();
         console.log("Firebase Firestore initialized successfully!");
     } else {
         console.warn("Warning: FIREBASE_SERVICE_ACCOUNT is missing from environment variables.");
@@ -47,7 +50,7 @@ async function saveChatToFirebase(userMsg, aiReply) {
         const docRef = await db.collection("chat_logs").add({
             userMessage: userMsg,
             aiReply: aiReply,
-            timestamp: admin.firestore.FieldValue.serverTimestamp()
+            timestamp: FieldValue.serverTimestamp()
         });
         console.log("Successfully saved chat to Firestore ID:", docRef.id);
     } catch (err) {

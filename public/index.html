@@ -24,7 +24,7 @@
             <span>Technologies</span>
         </div>
 
-        <button class="menu-button" onclick="toggleMenu()">
+        <button class="menu-button" onclick="toggleMenu()" aria-label="Toggle Navigation Menu">
             ☰
         </button>
 
@@ -47,29 +47,28 @@
 
             <div class="hero-content">
 
-                <p class="tag">CSS-R DIGITAL PROJECT</p>
+                <span class="tag">✨ CSS-R DIGITAL PROJECT</span>
 
                 <h1>
                     Central Secondary<br>
-                    School Ruhaama
+                    <span>School Ruhaama</span>
                 </h1>
 
                 <p class="hero-text">
-                    Learning, innovation and technology
-                    for a better future.
+                    Empowering learning, innovation, and digital technology for a smarter future.
                 </p>
 
                 <div class="hero-buttons">
-                    <a href="#school" class="button primary">
+                    <a href="#school" class="button secondary">
                         Explore CSS-R
                     </a>
 
-                    <a href="library.html" class="button secondary">
-                        Library System
+                    <a href="library.html" class="button primary library-btn">
+                        <span>📚</span> Library System
                     </a>
 
-                    <a href="/ai" class="button primary">
-                        🤖 CSS-R AI Portal
+                    <a href="/ai" class="button primary ai-btn">
+                        <span class="pulse-icon">🤖</span> CSS-R AI Portal
                     </a>
                 </div>
 
@@ -85,38 +84,36 @@
 
             <h2>About CSS-R</h2>
 
-            <p>
-                Central Secondary School Ruhaama is a place of
-                learning, growth and opportunity.
+            <p class="section-intro">
+                Central Secondary School Ruhaama is a center of learning, growth, and digital opportunity.
             </p>
 
             <div class="cards">
 
                 <div class="card">
-                    <div class="icon">🏫</div>
+                    <div class="icon-wrapper">🏫</div>
                     <h3>School Information</h3>
                     <p>
-                        Discover information about CSS-R,
-                        its facilities and activities.
+                        Discover detailed information about CSS-R, facilities, and campus activities.
                     </p>
                 </div>
 
-                <div class="card" style="cursor: pointer;" onclick="window.location.href='library.html'">
-                    <div class="icon">📚</div>
+                <div class="card portal-card" onclick="window.location.href='library.html'">
+                    <div class="icon-wrapper">📚</div>
                     <h3>Library System</h3>
                     <p>
-                        Access subjects, book records,
-                        and library management support.
+                        Access subjects, book records, digital catalogs, and library management tools.
                     </p>
+                    <span class="card-link">Open Library System →</span>
                 </div>
 
-                <div class="card" style="cursor: pointer;" onclick="window.location.href='/ai'">
-                    <div class="icon">🤖</div>
-                    <h3>AI Portal</h3>
+                <div class="card portal-card ai-card" onclick="window.location.href='/ai'">
+                    <div class="icon-wrapper">🤖</div>
+                    <h3>AI Learning Portal</h3>
                     <p>
-                        Interactive digital assistant for 
-                        learning, mathematics, and subject help.
+                        Interactive assistant for mathematics, coding, revision, and step-by-step homework help.
                     </p>
+                    <span class="card-link">Launch AI Portal →</span>
                 </div>
 
             </div>
@@ -131,17 +128,43 @@
 
             <h2>Learn Beyond the Classroom</h2>
 
-            <p>
-                The CSS-R Digital Project will bring useful
-                learning tools closer to students.
+            <p class="section-intro">
+                The CSS-R Digital Project brings modern learning tools directly to students' fingertips.
             </p>
 
-            <div class="feature-list">
+            <div class="feature-grid">
 
-                <div>📖 Subject resources</div>
-                <div>🧠 AI learning assistance</div>
-                <div>✏️ Practice and explanations</div>
-                <div>🌍 Technology education</div>
+                <div class="feature-item">
+                    <span class="feature-icon">📖</span>
+                    <div>
+                        <strong>Subject Resources</strong>
+                        <p>Access structured learning materials for your studies.</p>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <span class="feature-icon">🧠</span>
+                    <div>
+                        <strong>AI Learning Support</strong>
+                        <p>Get immediate help with difficult subject concepts.</p>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <span class="feature-icon">✏️</span>
+                    <div>
+                        <strong>Worked Examples</strong>
+                        <p>Clear step-by-step math and science solutions.</p>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <span class="feature-icon">🌍</span>
+                    <div>
+                        <strong>ICT & Technology</strong>
+                        <p>Learn programming, web skills, and computer fundamentals.</p>
+                    </div>
+                </div>
 
             </div>
 
@@ -151,25 +174,25 @@
         <!-- AI Info Section -->
         <section id="ai" class="section ai-section">
 
-            <p class="section-label">ARTIFICIAL INTELLIGENCE</p>
+            <div class="ai-banner-card">
+                <p class="section-label">ARTIFICIAL INTELLIGENCE</p>
 
-            <h2>🤖 CSS-R AI Assistant</h2>
+                <h2>🤖 CSS-R AI Assistant</h2>
 
-            <p>
-                Your dedicated digital learning assistant for
-                Central Secondary School Ruhaama. Get step-by-step 
-                help with Mathematics, Science, Coding, ICT, and general learning.
-            </p>
+                <p>
+                    Your dedicated digital learning assistant for Central Secondary School Ruhaama. Get step-by-step help with Mathematics, Science, Coding, ICT, and general learning.
+                </p>
 
-            <div style="margin-top: 25px; text-align: center;">
-                <a href="/ai" class="button primary" style="font-size: 1.1rem; padding: 14px 28px;">
-                    🚀 Launch CSS-R AI Portal
-                </a>
+                <div class="ai-cta-wrapper">
+                    <a href="/ai" class="button primary ai-btn-lg">
+                        🚀 Launch CSS-R AI Portal
+                    </a>
+                </div>
+
+                <p class="coming">
+                    Powered by Antelope Technologies
+                </p>
             </div>
-
-            <p class="coming" style="margin-top: 20px;">
-                Powered by Antelope Technologies.
-            </p>
 
         </section>
 
@@ -185,11 +208,8 @@
                 Senior 2C (S2C) Student
             </p>
 
-            <p>
-                This student technology project was created
-                to use technology, learning and innovation
-                to improve and enhance the name of
-                Central Secondary School Ruhaama.
+            <p class="developer-desc">
+                This student technology project was created to leverage technology, digital innovation, and learning tools to enhance and elevate the name of Central Secondary School Ruhaama.
             </p>
 
             <div class="developer-brand">
@@ -202,7 +222,7 @@
     </main>
 
 
-    <!-- Footer -->
+    <!-- Footer (Preserved structure & lower logo link intact) -->
     <footer>
 
         <h3>Antelope Technologies</h3>
@@ -222,10 +242,10 @@
 
     </footer>
 
-    <!-- Meet KoraChat -->
-    <div class="hero-buttons" style="justify-content: center; padding-bottom: 20px;">
-        <a href="https://korachat-1.onrender.com" class="button primary">
-            Meet KoraChat
+    <!-- Meet KoraChat (Kept bottom placement unchanged) -->
+    <div class="hero-buttons" style="justify-content: center; padding-bottom: 25px; margin-top: 10px;">
+        <a href="https://korachat-1.onrender.com" class="button primary korachat-btn" target="_blank" rel="noopener">
+            💬 Meet KoraChat
         </a>
     </div>
 

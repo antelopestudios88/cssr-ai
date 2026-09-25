@@ -1,12 +1,11 @@
 // Firebase Configuration (Uses existing Firebase project)
-// IMPORTANT: Replace placeholder keys with your actual Firebase project keys
 const firebaseConfig = {
-    apiKey: "YOUR_FIREBASE_API_KEY",
+    apiKey: "AIzaSyBYPJ6WyrRKfwcFLFfr08fWpAn6k_SpFOQ",
     authDomain: "css-r-ai.firebaseapp.com",
     projectId: "css-r-ai",
-    storageBucket: "css-r-ai.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    storageBucket: "css-r-ai.firebasestorage.app",
+    messagingSenderId: "36856277755",
+    appId: "1:36856277755:web:0ba75849a285deb61f9e5e"
 };
 
 // Initialize Firebase
@@ -156,7 +155,7 @@ async function handleAuth(event) {
 
             showMessage("Account created successfully! A verification email has been sent. Please verify your email before logging in.", "success");
             await auth.signOut();
-            
+
             // Switch back to login mode after 3 seconds
             setTimeout(() => switchTab('login'), 3000);
 

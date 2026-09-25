@@ -20,21 +20,21 @@
     <nav class="navbar">
 
         <div class="brand">
-            <strong>Antelope</strong>
-            <span>Technologies</span>
+            <strong>CSS-R</strong>
+            <span>Digital Portal</span>
         </div>
 
-        <button class="menu-button" onclick="toggleMenu()" aria-label="Toggle Navigation Menu">
+        <button class="menu-button" id="menuToggle" onclick="toggleMenu()" aria-label="Toggle Navigation Menu">
             ☰
         </button>
 
         <div id="navLinks" class="nav-links">
-            <a href="#home">Home</a>
-            <a href="#school">School</a>
-            <a href="#academics">Academics</a>
+            <a href="#home" onclick="closeMenu()">Home</a>
+            <a href="#school" onclick="closeMenu()">School</a>
+            <a href="#gallery" onclick="closeMenu()">Campus</a>
+            <a href="#academics" onclick="closeMenu()">Academics</a>
             <a href="library.html">Library System</a>
             <a href="/ai">CSS-R AI Portal</a>
-            <a href="#developer">Developer</a>
         </div>
 
     </nav>
@@ -47,15 +47,15 @@
 
             <div class="hero-content">
 
-                <span class="tag">✨ CSS-R DIGITAL PROJECT</span>
+                <span class="tag">CENTRAL SECONDARY SCHOOL RUHAAMA</span>
 
                 <h1>
-                    Central Secondary<br>
-                    <span>School Ruhaama</span>
+                    Education For<br>
+                    <span>A Difference</span>
                 </h1>
 
                 <p class="hero-text">
-                    Empowering learning, innovation, and digital technology for a smarter future.
+                    Empowering students through academic excellence, innovation, and digital technology.
                 </p>
 
                 <div class="hero-buttons">
@@ -85,16 +85,16 @@
             <h2>About CSS-R</h2>
 
             <p class="section-intro">
-                Central Secondary School Ruhaama is a center of learning, growth, and digital opportunity.
+                Central Secondary School Ruhaama (P.O. Box 37, Ntungamo) is dedicated to nurturing active citizens who make a difference in their communities and beyond.
             </p>
 
             <div class="cards">
 
                 <div class="card">
                     <div class="icon-wrapper">🏫</div>
-                    <h3>School Information</h3>
+                    <h3>School Core Values</h3>
                     <p>
-                        Discover detailed information about CSS-R, facilities, and campus activities.
+                        Excellence • Empathy • Innovation • Social Responsibility • Integrity
                     </p>
                 </div>
 
@@ -102,7 +102,7 @@
                     <div class="icon-wrapper">📚</div>
                     <h3>Library System</h3>
                     <p>
-                        Access subjects, book records, digital catalogs, and library management tools.
+                        Access subject books, study materials, and digital catalogs.
                     </p>
                     <span class="card-link">Open Library System →</span>
                 </div>
@@ -111,9 +111,67 @@
                     <div class="icon-wrapper">🤖</div>
                     <h3>AI Learning Portal</h3>
                     <p>
-                        Interactive assistant for mathematics, coding, revision, and step-by-step homework help.
+                        Interactive assistant for step-by-step help in Mathematics, Sciences, ICT, and coding.
                     </p>
                     <span class="card-link">Launch AI Portal →</span>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Campus Gallery Section -->
+        <section id="gallery" class="section">
+
+            <p class="section-label">CAMPUS & FACILITIES</p>
+
+            <h2>Central Secondary School Ruhaama</h2>
+
+            <p class="section-intro">
+                A glimpse into our campus, infrastructure, core values, and vision.
+            </p>
+
+            <div class="gallery-grid">
+
+                <div class="gallery-card wide">
+                    <img src="images/gate.jpg" alt="Central Secondary School Ruhaama Main Gate" loading="lazy">
+                    <div class="gallery-caption">
+                        <h3>Main Gate & Badge</h3>
+                        <p>Central Secondary School Ruhaama — Education For A Difference</p>
+                    </div>
+                </div>
+
+                <div class="gallery-card">
+                    <img src="images/core-values.jpg" alt="CSS-R Core Values Wall" loading="lazy">
+                    <div class="gallery-caption">
+                        <h3>Core Values Wall</h3>
+                        <p>Excellence, Empathy, Innovation, Social Responsibility & Integrity</p>
+                    </div>
+                </div>
+
+                <div class="gallery-card">
+                    <img src="images/mission.jpg" alt="CSS-R Mission Statement" loading="lazy">
+                    <div class="gallery-caption">
+                        <h3>Mission & Vision</h3>
+                        <p>Inspiring and educating students to create a better world for all</p>
+                    </div>
+                </div>
+
+                <div class="gallery-card">
+                    <img src="images/classrooms.jpg" alt="CSS-R Classroom Blocks" loading="lazy">
+                    <div class="gallery-caption">
+                        <h3>Classroom Blocks</h3>
+                        <p>Serene environment built for focused study and academic growth</p>
+                    </div>
+                </div>
+
+                <div class="gallery-card">
+                    <img src="images/campus-path.jpg" alt="CSS-R Walkway Path" loading="lazy">
+                    <div class="gallery-caption">
+                        <h3>Campus Grounds</h3>
+                        <p>Clean and well-maintained school compound and walkways</p>
+                    </div>
                 </div>
 
             </div>
@@ -129,7 +187,7 @@
             <h2>Learn Beyond the Classroom</h2>
 
             <p class="section-intro">
-                The CSS-R Digital Project brings modern learning tools directly to students' fingertips.
+                Bringing modern digital tools closer to students for effective study and revision.
             </p>
 
             <div class="feature-grid">
@@ -138,31 +196,31 @@
                     <span class="feature-icon">📖</span>
                     <div>
                         <strong>Subject Resources</strong>
-                        <p>Access structured learning materials for your studies.</p>
+                        <p>Access core subject notes and reference material.</p>
                     </div>
                 </div>
 
                 <div class="feature-item">
                     <span class="feature-icon">🧠</span>
                     <div>
-                        <strong>AI Learning Support</strong>
-                        <p>Get immediate help with difficult subject concepts.</p>
+                        <strong>AI Assistance</strong>
+                        <p>Get quick explanations for tricky topics and questions.</p>
                     </div>
                 </div>
 
                 <div class="feature-item">
                     <span class="feature-icon">✏️</span>
                     <div>
-                        <strong>Worked Examples</strong>
-                        <p>Clear step-by-step math and science solutions.</p>
+                        <strong>Step-by-Step Solutions</strong>
+                        <p>Detailed math and science calculations.</p>
                     </div>
                 </div>
 
                 <div class="feature-item">
                     <span class="feature-icon">🌍</span>
                     <div>
-                        <strong>ICT & Technology</strong>
-                        <p>Learn programming, web skills, and computer fundamentals.</p>
+                        <strong>ICT Education</strong>
+                        <p>Learn computing, digital skills, and web basics.</p>
                     </div>
                 </div>
 
@@ -180,7 +238,7 @@
                 <h2>🤖 CSS-R AI Assistant</h2>
 
                 <p>
-                    Your dedicated digital learning assistant for Central Secondary School Ruhaama. Get step-by-step help with Mathematics, Science, Coding, ICT, and general learning.
+                    Your interactive study companion for Central Secondary School Ruhaama. Ask questions, solve math problems, and revise your subjects easily.
                 </p>
 
                 <div class="ai-cta-wrapper">
@@ -188,33 +246,6 @@
                         🚀 Launch CSS-R AI Portal
                     </a>
                 </div>
-
-                <p class="coming">
-                    Powered by Antelope Technologies
-                </p>
-            </div>
-
-        </section>
-
-
-        <!-- Developer -->
-        <section id="developer" class="section developer">
-
-            <p class="section-label">THE DEVELOPER</p>
-
-            <h2>Lumala Hamuza</h2>
-
-            <p class="developer-role">
-                Senior 2C (S2C) Student
-            </p>
-
-            <p class="developer-desc">
-                This student technology project was created to leverage technology, digital innovation, and learning tools to enhance and elevate the name of Central Secondary School Ruhaama.
-            </p>
-
-            <div class="developer-brand">
-                <strong>Antelope Technologies</strong>
-                <span>Building with technology.</span>
             </div>
 
         </section>
@@ -222,27 +253,26 @@
     </main>
 
 
-    <!-- Footer (Preserved structure & lower logo link intact) -->
+    <!-- Footer (Preserved developer attribution) -->
     <footer>
 
         <h3>Antelope Technologies</h3>
 
         <p>
-            CSS-R Digital Project
+            CSS-R Digital Portal
         </p>
 
         <p>
-            Made by <strong>Lumala Hamuza</strong>,
-            S2C student of Central Secondary School Ruhaama.
+            Developed by <strong>Lumala Hamuza</strong>, S2C Student at Central Secondary School Ruhaama.
         </p>
 
         <p class="copyright">
-            © 2026 Antelope Technologies
+            © 2026 Antelope Technologies. All rights reserved.
         </p>
 
     </footer>
 
-    <!-- Meet KoraChat (Kept bottom placement unchanged) -->
+    <!-- Meet KoraChat -->
     <div class="hero-buttons" style="justify-content: center; padding-bottom: 25px; margin-top: 10px;">
         <a href="https://korachat-1.onrender.com" class="button primary korachat-btn" target="_blank" rel="noopener">
             💬 Meet KoraChat

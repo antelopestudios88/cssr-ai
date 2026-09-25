@@ -1,8 +1,30 @@
+// --- NAVIGATION MENU FUNCTIONS ---
 function toggleMenu() {
     const nav = document.getElementById("navLinks");
-    nav.classList.toggle("show");
+    if (nav) {
+        nav.classList.toggle("active");
+    }
 }
 
+function closeMenu() {
+    const nav = document.getElementById("navLinks");
+    if (nav && nav.classList.contains("active")) {
+        nav.classList.remove("active");
+    }
+}
+
+// Close menu when clicking outside of navbar on mobile
+document.addEventListener("click", (event) => {
+    const navbar = document.querySelector(".navbar");
+    const nav = document.getElementById("navLinks");
+
+    if (navbar && nav && !navbar.contains(event.target) && nav.classList.contains("active")) {
+        nav.classList.remove("active");
+    }
+});
+
+
+// --- AI CHAT FUNCTIONS ---
 let isThinking = false;
 
 async function sendMessage() {

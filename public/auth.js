@@ -70,7 +70,7 @@ function showMessage(msg, type) {
     const box = document.getElementById('authMessage');
     if (box) {
         box.style.display = 'block';
-        box.textContent = msg;
+        box.innerHTML = msg; // Allows HTML formatting like <strong>
         box.className = `auth-message ${type}`;
     }
 }
@@ -79,7 +79,7 @@ function clearMessage() {
     const box = document.getElementById('authMessage');
     if (box) {
         box.style.display = 'none';
-        box.textContent = '';
+        box.innerHTML = '';
     }
 }
 
@@ -154,11 +154,11 @@ async function handleAuth(event) {
             await user.sendEmailVerification();
             localStorage.setItem(`last_verify_sent_${user.uid}`, Date.now().toString());
 
-            showMessage("Account created successfully! A verification email has been sent. Please verify your email before logging in.", "success");
+            showMessage("Account created! A verification link was sent to your email. <strong>Check your Inbox & Spam folder</strong> before logging in.", "success");
             await auth.signOut();
 
-            // Switch back to login mode after 3 seconds
-            setTimeout(() => switchTab('login'), 3000);
+            // Switch back to login mode after 4 seconds so they can read the notification
+            setTimeout(() => switchTab('login'), 4000);
 
         } catch (error) {
             showMessage(error.message, "error");
@@ -174,9 +174,9 @@ async function handleAuth(event) {
                 if (shouldSendVerification(user.uid)) {
                     await user.sendEmailVerification();
                     localStorage.setItem(`last_verify_sent_${user.uid}`, Date.now().toString());
-                    showMessage("Your email is not verified yet. A new verification link has been sent to your email.", "error");
+                    showMessage("Your email is not verified yet. A new link has been sent. <strong>Please check your Inbox & Spam folder</strong>.", "error");
                 } else {
-                    showMessage("Your email is not verified yet. Please check your inbox for the verification email.", "error");
+                    showMessage("Your email is not verified yet. <strong>Check your Inbox & Spam folder</strong> for the verification link.", "error");
                 }
                 await auth.signOut();
                 return;
@@ -205,7 +205,7 @@ async function handleGoogleSignIn() {
         }
     } catch (error) {
         if (error.code === 'auth/popup-blocked' || error.code === 'auth/operation-not-supported-in-this-environment') {
-            // Fallback to redirect if popups are completely blocked by mobile browser settings
+            // Fallback to redirect if popups are blocked on mobile browser
             auth.signInWithRedirect(provider);
         } else if (error.code !== "auth/popup-closed-by-user") {
             showMessage("Google Sign-In Error: " + error.message, "error");

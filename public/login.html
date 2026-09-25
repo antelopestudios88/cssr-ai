@@ -152,11 +152,12 @@
 
         .auth-message {
             margin-top: 15px;
-            padding: 10px;
+            padding: 12px;
             border-radius: var(--radius-md);
             font-size: 0.85rem;
             text-align: center;
             display: none;
+            line-height: 1.4;
         }
 
         .auth-message.error {
@@ -171,6 +172,16 @@
             border: 1px solid #22c55e;
             color: #86efac;
             display: block;
+        }
+
+        .info-note {
+            background-color: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #93c5fd;
+            padding: 10px;
+            border-radius: var(--radius-md);
+            font-size: 0.8rem;
+            margin-bottom: 16px;
         }
     </style>
 </head>
@@ -204,9 +215,13 @@
 
             <!-- Form -->
             <form id="authForm" onsubmit="handleAuth(event)">
-                
+
                 <!-- Sign-Up Specific Fields -->
                 <div id="signupFields" style="display: none;">
+                    <div class="info-note">
+                        📩 <strong>Note:</strong> After signing up, a verification link will be emailed to you. Please check your <strong>Inbox & Spam folder</strong>.
+                    </div>
+
                     <div class="form-group">
                         <label for="fullName">Full Name</label>
                         <input type="text" id="fullName" placeholder="e.g. Lumala Hamuza">

@@ -94,18 +94,23 @@ app.get("/api/history", async (req, res) => {
     const userId = req.user ? req.user.uid : "anonymous";
 
     try {
+        // Query without orderBy to prevent requiring a composite index
         const snapshot = await db.collection("chat_logs")
             .where("userId", "==", userId)
-            .orderBy("timestamp", "asc")
-            .limit(50)
             .get();
 
-        const history = snapshot.docs.map(doc => ({
+        let history = snapshot.docs.map(doc => ({
             id: doc.id,
             userMessage: doc.data().userMessage,
             aiReply: doc.data().aiReply,
-            timestamp: doc.data().timestamp
+            timestamp: doc.data().timestamp ? doc.data().timestamp.toMillis() : 0
         }));
+
+        // Sort in memory by timestamp ascending
+        history.sort((a, b) => a.timestamp - b.timestamp);
+
+        // Keep the latest 50 messages
+        history = history.slice(-50);
 
         res.json({ history });
     } catch (error) {
@@ -113,6 +118,7 @@ app.get("/api/history", async (req, res) => {
         res.status(500).json({ error: "Failed to load chat history." });
     }
 });
+
 
 // --- DEDICATED PAGE ROUTES ---
 app.get("/login", (req, res) => {

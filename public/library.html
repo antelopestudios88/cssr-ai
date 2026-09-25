@@ -3,7 +3,59 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>School Library Management System</title>
+  <title>CSS-R - School Library Management System</title>
+
+  <!-- Firebase SDKs for Route Protection & Auth -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <!-- MANDATORY AUTH GUARD SCRIPT -->
+  <script>
+    // IMPORTANT: Replace placeholders with your real Firebase Project Credentials
+    const firebaseConfig = {
+      apiKey: "YOUR_FIREBASE_API_KEY",
+      authDomain: "css-r-ai.firebaseapp.com",
+      projectId: "css-r-ai",
+      storageBucket: "css-r-ai.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
+    const auth = firebase.auth();
+
+    // Protect route: Ensure user is logged in & email verified
+    auth.onAuthStateChanged((user) => {
+      if (!user) {
+        alert("Authentication required. Please log in to access the CSS-R Library.");
+        window.location.href = "/login";
+      } else if (!user.emailVerified && user.providerData[0]?.providerId === "password") {
+        alert("Please verify your email address before accessing the Library Portal.");
+        auth.signOut().then(() => {
+          window.location.href = "/login";
+        });
+      } else {
+        // Set user details on UI once authorized
+        document.addEventListener("DOMContentLoaded", () => {
+          const badge = document.getElementById("userBadge");
+          if (badge) {
+            badge.textContent = user.displayName || user.email;
+          }
+        });
+      }
+    });
+
+    function handleLogout() {
+      auth.signOut().then(() => {
+        window.location.href = "/login";
+      });
+    }
+  </script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -71,6 +123,38 @@
     .header h1 {
       font-size: 1.5rem;
       color: #0f172a;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-badge {
+      font-size: 0.85rem;
+      color: #334155;
+      background: #f1f5f9;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      font-weight: 600;
+    }
+
+    .nav-btn {
+      background-color: #0284c7;
+      color: white;
+      text-decoration: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-logout {
+      background-color: #ef4444;
     }
 
     .stats-grid {
@@ -149,7 +233,6 @@
       color: #475569;
     }
 
-    /* Modern Styled Dropdown Inputs */
     .form-group input, .form-group select {
       width: 100%;
       padding: 12px;
@@ -205,14 +288,6 @@
     th {
       background-color: #f8fafc;
       color: #475569;
-    }
-
-    .status-badge {
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 0.75rem;
-      font-weight: bold;
-      display: inline-block;
     }
 
     .tab-section {
@@ -329,7 +404,6 @@
       background-color: #0369a1;
     }
 
-    /* Custom Toast Notification Banner */
     .toast-notification {
       position: fixed;
       top: 20px;
@@ -372,7 +446,11 @@
     <!-- Top Header -->
     <div class="header">
       <h1 id="pageTitle">School Library Dashboard</h1>
-      <div><strong>Librarian Portal</strong></div>
+      <div class="nav-actions">
+        <span id="userBadge" class="user-badge">Loading...</span>
+        <a href="/" class="nav-btn">← Home</a>
+        <button onclick="handleLogout()" class="nav-btn btn-logout">Sign Out</button>
+      </div>
     </div>
 
     <!-- Quick Stats Cards -->

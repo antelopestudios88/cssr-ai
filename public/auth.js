@@ -1,4 +1,5 @@
-// Firebase Configuration (Uses existing Firebase project initialized on backend/frontend)
+// Firebase Configuration (Uses existing Firebase project)
+// IMPORTANT: Replace placeholder keys with your actual Firebase project keys
 const firebaseConfig = {
     apiKey: "YOUR_FIREBASE_API_KEY",
     authDomain: "css-r-ai.firebaseapp.com",
@@ -18,6 +19,26 @@ const db = firebase.firestore();
 
 let currentMode = 'login'; // 'login' or 'signup'
 
+// Supported Email Domains
+const ALLOWED_DOMAINS = ["gmail.com", "yahoo.com", "outlook.com", "live.com", "hotmail.com"];
+
+function validateEmailDomain(email) {
+    const domain = email.split('@')[1]?.toLowerCase();
+    return ALLOWED_DOMAINS.includes(domain);
+}
+
+// Check if verification email should be re-sent (once every 30 days)
+function shouldSendVerification(uid) {
+    const lastSent = localStorage.getItem(`last_verify_sent_${uid}`);
+    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
+    if (!lastSent || (Date.now() - parseInt(lastSent, 10)) > THIRTY_DAYS_MS) {
+        return true;
+    }
+    return false;
+}
+
+// UI Tab Switcher
 function switchTab(mode) {
     currentMode = mode;
     const loginTab = document.getElementById('loginTab');
@@ -30,33 +51,67 @@ function switchTab(mode) {
     clearMessage();
 
     if (mode === 'signup') {
-        loginTab.classList.remove('active');
-        signupTab.classList.add('active');
-        signupFields.style.display = 'block';
-        submitBtn.textContent = 'Create Account';
-        formTitle.textContent = 'Join CSS-R Digital';
-        formSubtitle.textContent = 'Create your account to start learning';
+        if (loginTab) loginTab.classList.remove('active');
+        if (signupTab) signupTab.classList.add('active');
+        if (signupFields) signupFields.style.display = 'block';
+        if (submitBtn) submitBtn.textContent = 'Create Account';
+        if (formTitle) formTitle.textContent = 'Join CSS-R Digital';
+        if (formSubtitle) formSubtitle.textContent = 'Create your account to start learning';
     } else {
-        signupTab.classList.remove('active');
-        loginTab.classList.add('active');
-        signupFields.style.display = 'none';
-        submitBtn.textContent = 'Sign In';
-        formTitle.textContent = 'Welcome Back';
-        formSubtitle.textContent = 'Sign in to access your personal CSS-R AI portal';
+        if (signupTab) signupTab.classList.remove('active');
+        if (loginTab) loginTab.classList.add('active');
+        if (signupFields) signupFields.style.display = 'none';
+        if (submitBtn) submitBtn.textContent = 'Sign In';
+        if (formTitle) formTitle.textContent = 'Welcome Back';
+        if (formSubtitle) formSubtitle.textContent = 'Sign in to access your personal CSS-R AI portal';
     }
 }
 
 function showMessage(msg, type) {
     const box = document.getElementById('authMessage');
-    box.textContent = msg;
-    box.className = `auth-message ${type}`;
+    if (box) {
+        box.style.display = 'block';
+        box.textContent = msg;
+        box.className = `auth-message ${type}`;
+    }
 }
 
 function clearMessage() {
     const box = document.getElementById('authMessage');
-    box.style.display = 'none';
-    box.textContent = '';
+    if (box) {
+        box.style.display = 'none';
+        box.textContent = '';
+    }
 }
+
+// Handle Google Redirect Result on Page Load
+document.addEventListener("DOMContentLoaded", () => {
+    auth.getRedirectResult().then(async (result) => {
+        if (result && result.user) {
+            const user = result.user;
+
+            // Save user doc to Firestore if first time signing in
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            if (!userDoc.exists) {
+                await db.collection('users').doc(user.uid).set({
+                    uid: user.uid,
+                    name: user.displayName || 'CSS-R Student',
+                    class: 'Student',
+                    email: user.email,
+                    photoURL: user.photoURL,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
+
+            showMessage("Google sign-in successful! Redirecting...", "success");
+            setTimeout(() => window.location.href = '/ai', 1000);
+        }
+    }).catch((error) => {
+        if (error.code !== "auth/popup-closed-by-user") {
+            showMessage("Google Sign-In Error: " + error.message, "error");
+        }
+    });
+});
 
 // Handle Form Submit (Email / Password)
 async function handleAuth(event) {
@@ -65,6 +120,11 @@ async function handleAuth(event) {
 
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
+
+    if (!validateEmailDomain(email)) {
+        showMessage("Please use a valid email address from Gmail, Yahoo, Outlook, or Live.", "error");
+        return;
+    }
 
     if (currentMode === 'signup') {
         const fullName = document.getElementById('fullName').value.trim();
@@ -79,6 +139,8 @@ async function handleAuth(event) {
             const userCredential = await auth.createUserWithEmailAndPassword(email, password);
             const user = userCredential.user;
 
+            await user.updateProfile({ displayName: fullName });
+
             // Save user profile to Firestore
             await db.collection('users').doc(user.uid).set({
                 uid: user.uid,
@@ -88,8 +150,15 @@ async function handleAuth(event) {
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
 
-            showMessage("Account created successfully! Redirecting...", "success");
-            setTimeout(() => window.location.href = '/ai', 1200);
+            // Send Verification Email
+            await user.sendEmailVerification();
+            localStorage.setItem(`last_verify_sent_${user.uid}`, Date.now().toString());
+
+            showMessage("Account created successfully! A verification email has been sent. Please verify your email before logging in.", "success");
+            await auth.signOut();
+            
+            // Switch back to login mode after 3 seconds
+            setTimeout(() => switchTab('login'), 3000);
 
         } catch (error) {
             showMessage(error.message, "error");
@@ -97,41 +166,34 @@ async function handleAuth(event) {
 
     } else { // Login Mode
         try {
-            await auth.signInWithEmailAndPassword(email, password);
+            const userCredential = await auth.signInWithEmailAndPassword(email, password);
+            const user = userCredential.user;
+
+            // Require email verification check
+            if (!user.emailVerified) {
+                if (shouldSendVerification(user.uid)) {
+                    await user.sendEmailVerification();
+                    localStorage.setItem(`last_verify_sent_${user.uid}`, Date.now().toString());
+                    showMessage("Your email is not verified yet. A new verification link has been sent to your email.", "error");
+                } else {
+                    showMessage("Your email is not verified yet. Please check your inbox for the verification email.", "error");
+                }
+                await auth.signOut();
+                return;
+            }
+
             showMessage("Login successful! Redirecting...", "success");
             setTimeout(() => window.location.href = '/ai', 1000);
+
         } catch (error) {
             showMessage(error.message, "error");
         }
     }
 }
 
-// Handle Google Sign-In
+// Handle Google Sign-In with Redirect (Prevents about:blank on mobile webviews)
 async function handleGoogleSignIn() {
     clearMessage();
     const provider = new firebase.auth.GoogleAuthProvider();
-
-    try {
-        const result = await auth.signInWithPopup(provider);
-        const user = result.user;
-
-        // Check if user record exists in Firestore, if not create one
-        const userDoc = await db.collection('users').doc(user.uid).get();
-        if (!userDoc.exists) {
-            await db.collection('users').doc(user.uid).set({
-                uid: user.uid,
-                name: user.displayName || 'CSS-R Student',
-                class: 'Student',
-                email: user.email,
-                photoURL: user.photoURL,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        }
-
-        showMessage("Google sign-in successful! Redirecting...", "success");
-        setTimeout(() => window.location.href = '/ai', 1000);
-
-    } catch (error) {
-        showMessage(error.message, "error");
-    }
+    auth.signInWithRedirect(provider);
 }

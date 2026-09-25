@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CSS-R AI - Digital Learning Portal</title>
 
+  <!-- Firebase SDKs for Route Protection & Auth Tokens -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
   <!-- Marked.js for Markdown parsing -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
@@ -57,6 +61,21 @@
       color: #94a3b8;
     }
 
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-badge {
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      background: #0f172a;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid #334155;
+    }
+
     .nav-btn {
       background-color: #0284c7;
       color: white;
@@ -65,6 +84,12 @@
       border-radius: 6px;
       font-size: 0.85rem;
       font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-logout {
+      background-color: #ef4444;
     }
 
     .chat-container {
@@ -156,7 +181,11 @@
       <h1>🤖 CSS-R AI Portal</h1>
       <span>Central Secondary School Ruhaama</span>
     </div>
-    <a href="/" class="nav-btn">← Home</a>
+    <div class="nav-actions">
+      <span id="userBadge" class="user-badge">Loading...</span>
+      <a href="/" class="nav-btn">← Home</a>
+      <button onclick="handleLogout()" class="nav-btn btn-logout">Sign Out</button>
+    </div>
   </div>
 
   <div class="chat-container">
@@ -178,6 +207,42 @@
   </div>
 
   <script>
+    // --- FIREBASE INITIALIZATION & ROUTE GUARD ---
+    const firebaseConfig = {
+      apiKey: "YOUR_FIREBASE_API_KEY",
+      authDomain: "css-r-ai.firebaseapp.com",
+      projectId: "css-r-ai",
+      storageBucket: "css-r-ai.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
+    const auth = firebase.auth();
+    let currentUser = null;
+
+    // Route Protection Guard
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        // Redirect unauthorized users to login page
+        window.location.href = "/login";
+      } else {
+        currentUser = user;
+        document.getElementById('userBadge').textContent = user.displayName || user.email;
+        await loadChatHistory();
+      }
+    });
+
+    function handleLogout() {
+      auth.signOut().then(() => {
+        window.location.href = "/login";
+      });
+    }
+
+    // --- CHAT LOGIC ---
     const chatForm = document.getElementById('chatForm');
     const userInput = document.getElementById('userInput');
     const chatMessages = document.getElementById('chatMessages');
@@ -215,10 +280,17 @@
       }[match]));
     }
 
-    // Restore chat history from Firestore on page load and populate memory array
+    // Fetch user-isolated chat history from Firestore with Auth Token
     async function loadChatHistory() {
       try {
-        const response = await fetch('/api/history');
+        if (!currentUser) return;
+        const token = await currentUser.getIdToken();
+
+        const response = await fetch('/api/history', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         const data = await response.json();
 
         if (data.history && data.history.length > 0) {
@@ -237,9 +309,6 @@
       }
     }
 
-    // Call history loader on page initialization
-    window.addEventListener('DOMContentLoaded', loadChatHistory);
-
     chatForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const question = userInput.value.trim();
@@ -255,11 +324,16 @@
       chatMessages.scrollTop = chatMessages.scrollHeight;
 
       try {
-        // Send current message along with past chat history context
+        const token = currentUser ? await currentUser.getIdToken() : "";
+
+        // Send current message along with token & past chat history
         const response = await fetch('/api/chat', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
             message: question,
             history: chatHistory.slice(-10) // Limit to last 10 messages for speed
           })

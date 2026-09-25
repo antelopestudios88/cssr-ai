@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CSS-R AI - Digital Learning Portal</title>
 
-  <!-- Firebase SDKs for Route Protection & Auth Tokens -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
@@ -17,7 +17,7 @@
     window.MathJax = {
       tex: {
         inlineMath: [['\\(', '\\)'], ['$', '$']],
-        displayMath: [['\\[', '\\]'], ['$$', '$$'], ['[', ']']]
+        displayMath: [['\\[', '\\]'], ['$$', '$$']]
       },
       options: {
         skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
@@ -176,6 +176,7 @@
 </head>
 <body>
 
+  <!-- HEADER AREA -->
   <div class="header">
     <div class="brand">
       <h1>🤖 CSS-R AI Portal</h1>
@@ -183,11 +184,11 @@
     </div>
     <div class="nav-actions">
       <span id="userBadge" class="user-badge">Loading...</span>
-      <a href="/" class="nav-btn">← Home</a>
       <button onclick="handleLogout()" class="nav-btn btn-logout">Sign Out</button>
     </div>
   </div>
 
+  <!-- CHAT DASHBOARD UI -->
   <div class="chat-container">
     <div id="chatMessages" class="chat-messages">
       <div class="message ai">
@@ -206,15 +207,15 @@
     Created by Lumala Hamuza • Antelope Technologies / Antelope Labs
   </div>
 
+  <!-- FIREBASE AUTH & APPLICATION SCRIPT -->
   <script>
-    // --- FIREBASE INITIALIZATION & ROUTE GUARD ---
     const firebaseConfig = {
-      apiKey: "YOUR_FIREBASE_API_KEY",
+      apiKey: "AIzaSyBYPJ6WyrRKfwcFLFfr08fWpAn6k_SpFOQ",
       authDomain: "css-r-ai.firebaseapp.com",
       projectId: "css-r-ai",
-      storageBucket: "css-r-ai.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      storageBucket: "css-r-ai.firebasestorage.app",
+      messagingSenderId: "36856277755",
+      appId: "1:36856277755:web:0ba75849a285deb61f9e5e"
     };
 
     if (!firebase.apps.length) {
@@ -227,7 +228,6 @@
     // Route Protection Guard
     auth.onAuthStateChanged(async (user) => {
       if (!user) {
-        // Redirect unauthorized users to login page
         window.location.href = "/login";
       } else {
         currentUser = user;
@@ -242,12 +242,10 @@
       });
     }
 
-    // --- CHAT LOGIC ---
     const chatForm = document.getElementById('chatForm');
     const userInput = document.getElementById('userInput');
     const chatMessages = document.getElementById('chatMessages');
 
-    // Local state to track short-term conversation context for Groq
     let chatHistory = [];
 
     function appendMessage(sender, text, isAi) {
@@ -255,9 +253,8 @@
       msgDiv.className = `message ${isAi ? 'ai' : 'user'}`;
 
       if (isAi) {
-        // Pre-process math tags so marked doesn't strip backslashes
         let formattedText = text
-          .replace(/\[\s*/g, '$$$$')           .replace(/\s*\]/g, '$$$$');
+          .replace(/\\\[/g, '$$$$')           .replace(/\\\]/g, '$$$$');
 
         const htmlContent = window.marked ? marked.parse(formattedText) : escapeHtml(text);
         msgDiv.innerHTML = `<strong>${sender}:</strong><br>${htmlContent}`;
@@ -268,7 +265,6 @@
       chatMessages.appendChild(msgDiv);
       chatMessages.scrollTop = chatMessages.scrollHeight;
 
-      // Render math equations with MathJax
       if (isAi && window.MathJax && window.MathJax.typesetPromise) {
         MathJax.typesetPromise([msgDiv]).catch((err) => console.error("MathJax error:", err));
       }
@@ -280,7 +276,6 @@
       }[match]));
     }
 
-    // Fetch user-isolated chat history from Firestore with Auth Token
     async function loadChatHistory() {
       try {
         if (!currentUser) return;
@@ -294,12 +289,11 @@
         const data = await response.json();
 
         if (data.history && data.history.length > 0) {
-          chatHistory = []; // Reset local memory
+          chatHistory = [];
           data.history.forEach(item => {
             appendMessage('You', item.userMessage, false);
             appendMessage('CSS-R AI', item.aiReply, true);
 
-            // Seed local chat memory so AI context persists across refresh
             chatHistory.push({ role: 'user', content: item.userMessage });
             chatHistory.push({ role: 'assistant', content: item.aiReply });
           });
@@ -326,7 +320,6 @@
       try {
         const token = currentUser ? await currentUser.getIdToken() : "";
 
-        // Send current message along with token & past chat history
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: {
@@ -335,7 +328,7 @@
           },
           body: JSON.stringify({
             message: question,
-            history: chatHistory.slice(-10) // Limit to last 10 messages for speed
+            history: chatHistory.slice(-10)
           })
         });
 
@@ -348,7 +341,6 @@
         if (response.ok) {
           appendMessage('CSS-R AI', data.reply, true);
 
-          // Append exchange to local history context
           chatHistory.push({ role: 'user', content: question });
           chatHistory.push({ role: 'assistant', content: data.reply });
         } else {

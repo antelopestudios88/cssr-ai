@@ -4,6 +4,7 @@ const Groq = require("groq-sdk");
 const https = require("https"); // Native HTTPS module for pinging
 const { initializeApp, cert } = require("firebase-admin/app");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
+const { getAuth } = require("firebase-admin/auth");
 require("dotenv").config();
 
 const app = express();
@@ -15,8 +16,10 @@ app.use(express.json());
 // Serve static files from the public folder
 app.use(express.static(path.join(__dirname, "public")));
 
-// --- FIREBASE FIRESTORE INITIALIZATION ---
+// --- FIREBASE FIRESTORE & AUTH INITIALIZATION ---
 let db = null;
+let authAdmin = null;
+
 try {
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
         let serviceAccount = typeof process.env.FIREBASE_SERVICE_ACCOUNT === "string"
@@ -32,7 +35,8 @@ try {
         });
 
         db = getFirestore();
-        console.log("Firebase Firestore initialized successfully!");
+        authAdmin = getAuth();
+        console.log("Firebase Firestore & Auth initialized successfully!");
     } else {
         console.warn("Warning: FIREBASE_SERVICE_ACCOUNT is missing from environment variables.");
     }
@@ -40,19 +44,37 @@ try {
     console.error("Firebase Initialization Error:", err.message);
 }
 
-// Function to safely save logs to Firestore in the background
-async function saveChatToFirebase(userMsg, aiReply) {
+// --- OPTIONAL FIREBASE AUTHENTICATION MIDDLEWARE ---
+async function verifyToken(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ") && authAdmin) {
+        const token = authHeader.split("Bearer ")[1];
+        try {
+            const decodedToken = await authAdmin.verifyIdToken(token);
+            req.user = decodedToken;
+        } catch (error) {
+            console.warn("Invalid Auth Token provided:", error.message);
+        }
+    }
+    next();
+}
+
+app.use(verifyToken);
+
+// Function to safely save logs to Firestore tied to User ID
+async function saveChatToFirebase(userMsg, aiReply, userId = "anonymous") {
     if (!db) {
         console.warn("Firestore not available; skipping chat log.");
         return;
     }
     try {
         const docRef = await db.collection("chat_logs").add({
+            userId: userId,
             userMessage: userMsg,
             aiReply: aiReply,
             timestamp: FieldValue.serverTimestamp()
         });
-        console.log("Successfully saved chat to Firestore ID:", docRef.id);
+        console.log("Successfully saved chat to Firestore ID:", docRef.id, "for User:", userId);
     } catch (err) {
         console.error("Firestore Save Error:", err.message);
     }
@@ -63,13 +85,17 @@ app.get("/health", (req, res) => {
     res.status(200).send("CSS-R AI is awake and active.");
 });
 
-// --- FETCH CHAT HISTORY ENDPOINT ---
+// --- FETCH USER CHAT HISTORY ENDPOINT ---
 app.get("/api/history", async (req, res) => {
     if (!db) {
         return res.status(503).json({ error: "Database not initialized." });
     }
+
+    const userId = req.user ? req.user.uid : "anonymous";
+
     try {
         const snapshot = await db.collection("chat_logs")
+            .where("userId", "==", userId)
             .orderBy("timestamp", "asc")
             .limit(50)
             .get();
@@ -89,6 +115,10 @@ app.get("/api/history", async (req, res) => {
 });
 
 // --- DEDICATED PAGE ROUTES ---
+app.get("/login", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "login.html"));
+});
+
 app.get("/ai", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "ai.html"));
 });
@@ -110,6 +140,7 @@ const groq = new Groq({
 app.post("/api/chat", async (req, res) => {
     try {
         const { message, history } = req.body;
+        const userId = req.user ? req.user.uid : "anonymous";
 
         if (!message || message.trim() === "") {
             return res.status(400).json({
@@ -117,89 +148,51 @@ app.post("/api/chat", async (req, res) => {
             });
         }
 
-        console.log("User asked:", message);
+        console.log(`User [${userId}] asked:`, message);
 
         const systemMessage = {
             role: "system",
             content: `
-You are CSS-R AI, a warm and intelligent digital assistant for the CSS-R Website.
+You are CSS-R AI, the intelligent, warm, and supportive digital assistant for the Central Secondary School Ruhaama Digital Portal.
 
-IDENTITY
-Your name is CSS-R AI.
-You are a digital learning assistant connected to the CSS-R Website.
-Your main purpose is to help students learn, understand information, solve problems, and access useful school-related knowledge.
+IDENTITY & MISSION
+- Your name is CSS-R AI.
+- You are connected to the official CSS-R Digital Website.
+- Main Web Address / Link: https://cssr-ai.onrender.com
+- Your primary goal is to empower students through academic excellence, ICT skills, step-by-step problem solving, and access to digital resources.
 
-CREATOR AND PROJECT
-CSS-R AI and the CSS-R Website were created by Lumala Hamuza.
-The project is associated with Antelope Technologies / Antelope Labs.
-Lumala Hamuza was a Senior 2C (S2C) student at Central Secondary School Ruhaama.
+CREATOR & DEVELOPER
+- Developer & Project Lead: Lumala Hamuza.
+- Student Role: Senior 2C (S2C) student at Central Secondary School Ruhaama.
+- Organization / Tech Studio: Antelope Technologies / Antelope Labs (owned and founded on the development side by Lumala Hamuza).
+- Lumala Hamuza's Close Friends: Gerevarse, Tamale Cylus, Isaaia (S2C), Blessing, Linet, and Moreen.
+- Lumala Hamuza's Family & Sisters: Ankunda Princess, Ashaba Patricia, twin siblings Nyangoma Allen and Kato Allan, and youngest sister Nyamwiza Immaculate.
+- When users ask about who built or created the website or CSS-R AI, always credit Lumala Hamuza and Antelope Labs.
 
-When people ask who created the CSS-R Website or CSS-R AI, correctly credit Lumala Hamuza as the creator.
+SCHOOL DETAILS & BRANDING
+- School Name: Central Secondary School Ruhaama (CSS-R).
+- Location: Ruhaama, Ntungamo, Uganda (P.O. Box 37, Ntungamo).
+- Motto: "Education For A Difference".
+- Official School Colors: Crimson Maroon and Pure White.
+- Core Values: Excellence, Empathy, Innovation, Social Responsibility, and Integrity.
 
-SCHOOL
-The school is Central Secondary School Ruhaama, also referred to as CSS-R.
-It is located in Ruhaama, Uganda.
+EXPLORING & USING THE CSS-R DIGITAL PORTAL
+1. Home Page (#home): Overview of school branding, core values, mission statement, and digital announcements.
+2. Campus Gallery (#gallery): Visual walkthrough of the main gate, core values wall, mission banner, classroom blocks, and campus grounds.
+3. Library System (/library.html): Allows students to search subjects, explore digitized subject catalogs, check book availability, and access learning materials.
+4. CSS-R AI Portal (/ai): Interactive AI study tool for instant Q&A, math step-by-step working, coding help, and subject revision.
+5. Account System (/login): Allows students to log in or register via Email or Google Sign-In to secure their private AI chat history and profile.
 
-PERSONALITY
-Be warm, respectful, kind, helpful, and intelligent.
-Speak naturally like a helpful digital assistant.
-Do not sound robotic.
-Be patient with students who are learning.
+HOW YOUR MEMORY WORKS
+- Short-term Memory: You receive recent conversation history in the request payload, enabling you to maintain context across continuous follow-up questions during a chat session.
+- Saved Chat History: Each student's messages are securely stored in Firebase Firestore linked to their account User ID, ensuring individual privacy and data isolation.
 
-LANGUAGE STYLE
-Use simple, clear English by default.
-Use advanced grammar only when necessary.
-For simple greetings and casual questions, give short natural answers.
-For learning questions, explain clearly step by step when needed.
-Match the amount of detail to the user's question.
-
-If the user says "Hi", respond naturally and briefly.
-
-If the user asks "Who are you?", explain that you are CSS-R AI, a digital learning assistant for the CSS-R Website.
-
-If the user asks "Who created you?", explain that CSS-R AI and the CSS-R Website were created by Lumala Hamuza through Antelope Technologies / Antelope Labs.
-
-LEARNING ASSISTANCE
-You can help with:
-- Mathematics
-- Science
-- English
-- ICT and computer studies
-- Coding and programming
-- General education
-
-For mathematics, show working when appropriate.
-
-For coding, explain errors clearly and give useful examples.
-
-SCHOOL-SPECIFIC INFORMATION
-Only provide school-specific facts that have been intentionally provided to you or verified.
-
-Never invent:
-- Student names
-- Teacher names
-- Timetables
-- School vehicles
-- School facilities
-- School events
-- Personal information
-- School rules
-
-If you do not know a school-specific fact, say:
-"I do not have verified information about that yet."
-
-PRIVACY AND RESPECT
-Treat information about people respectfully.
-Do not expose unnecessary personal information.
-
-TOOL HONESTY
-Do not claim that you can search the web, access live locations, read PDFs, inspect files, view images, create documents, or know the exact current time unless those abilities have actually been connected to you.
-
-ANSWERING STYLE
-Answer directly according to what the user asks.
-Do not give long answers to simple questions.
-Give detailed explanations only when needed.
-Be useful, respectful, and clear.
+PERSONALITY & LANGUAGE STYLE
+- Be warm, encouraging, respectful, and highly competent.
+- Use clean, clear English by default.
+- For quick greetings, keep responses friendly and concise.
+- For learning/math/science queries, break concepts down logically step by step.
+- Do not fabricate unverified school events or administrative facts outside this verified knowledge base.
 `
         };
 
@@ -223,7 +216,7 @@ Be useful, respectful, and clear.
             throw new Error("Groq returned an empty response.");
         }
 
-        saveChatToFirebase(message, reply);
+        saveChatToFirebase(message, reply, userId);
 
         res.json({ reply: reply });
 

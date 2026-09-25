@@ -83,31 +83,32 @@ function clearMessage() {
     }
 }
 
-// Handle Google Redirect Result on Page Load
+// Helper to save missing user profile to Firestore
+async function ensureUserProfileExists(user) {
+    const userDoc = await db.collection('users').doc(user.uid).get();
+    if (!userDoc.exists) {
+        await db.collection('users').doc(user.uid).set({
+            uid: user.uid,
+            name: user.displayName || 'CSS-R Student',
+            class: 'Student',
+            email: user.email,
+            photoURL: user.photoURL,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    }
+}
+
+// Handle Google Redirect Result on Page Load (Fallback mechanism)
 document.addEventListener("DOMContentLoaded", () => {
     auth.getRedirectResult().then(async (result) => {
         if (result && result.user) {
-            const user = result.user;
-
-            // Save user doc to Firestore if first time signing in
-            const userDoc = await db.collection('users').doc(user.uid).get();
-            if (!userDoc.exists) {
-                await db.collection('users').doc(user.uid).set({
-                    uid: user.uid,
-                    name: user.displayName || 'CSS-R Student',
-                    class: 'Student',
-                    email: user.email,
-                    photoURL: user.photoURL,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            }
-
+            await ensureUserProfileExists(result.user);
             showMessage("Google sign-in successful! Redirecting...", "success");
             setTimeout(() => window.location.href = '/ai', 1000);
         }
     }).catch((error) => {
-        if (error.code !== "auth/popup-closed-by-user") {
-            showMessage("Google Sign-In Error: " + error.message, "error");
+        if (error.code !== "auth/popup-closed-by-user" && error.code !== "auth/credential-already-in-use") {
+            console.log("Redirect info: " + error.message);
         }
     });
 });
@@ -190,9 +191,24 @@ async function handleAuth(event) {
     }
 }
 
-// Handle Google Sign-In with Redirect (Prevents about:blank on mobile webviews)
+// Handle Google Sign-In with Popup (With Redirect Fallback)
 async function handleGoogleSignIn() {
     clearMessage();
     const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithRedirect(provider);
+
+    try {
+        const result = await auth.signInWithPopup(provider);
+        if (result.user) {
+            await ensureUserProfileExists(result.user);
+            showMessage("Google sign-in successful! Redirecting...", "success");
+            setTimeout(() => window.location.href = '/ai', 1000);
+        }
+    } catch (error) {
+        if (error.code === 'auth/popup-blocked' || error.code === 'auth/operation-not-supported-in-this-environment') {
+            // Fallback to redirect if popups are completely blocked by mobile browser settings
+            auth.signInWithRedirect(provider);
+        } else if (error.code !== "auth/popup-closed-by-user") {
+            showMessage("Google Sign-In Error: " + error.message, "error");
+        }
+    }
 }
